@@ -29,7 +29,7 @@ engine3D_transform_t transform;
 engine3D_vertex_t *vertices;
 unsigned int *indices;
 
-static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, unsigned int **indices, size_t indices_len) {
+static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, unsigned int **indices, size_t *indices_len) {
 	size_t vertices_capacity = 64;
 	size_t indices_capacity = 64;
 	engine3D_vertex_t *vertices_array = engine3D_util_safeMalloc(sizeof(engine3D_vertex_t) * vertices_capacity);
@@ -118,8 +118,8 @@ static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, un
 
 	*vertices = vertices_array;
 	*indices = indices_array;
-	vertices_len = vertices_index;
-	indices_len = indices_index;
+	*vertices_len = vertices_index;
+	*indices_len = indices_index;
 }
 
 static void init(void) {
@@ -234,7 +234,7 @@ static void input(void) {
 }
 
 static void update(void) {
-	
+
 }
 
 static void render(void) {

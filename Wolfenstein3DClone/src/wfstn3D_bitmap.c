@@ -1,6 +1,6 @@
 #include <wfstn3D_bitmap.h>
 
-#include <Engine3D\engine3D_util.h>
+#include <Engine3D/engine3D_util.h>
 #include <FreeImage.h>
 
 #include <stdint.h>

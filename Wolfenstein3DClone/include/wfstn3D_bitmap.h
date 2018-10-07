@@ -2,6 +2,7 @@
 #define WFSTN3D_BITMAP_H
 
 #include <stdint.h>
+#include <stdlib.h>
 
 typedef struct wfstn3D_bitmap_t {
 	size_t width;
