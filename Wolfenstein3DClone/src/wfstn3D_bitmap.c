@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <string.h>
+
 void wfstn3D_bitmap_load(const char *const filename, wfstn3D_bitmap_t *const bitmap) {
 	char filepath[256] = "../Wolfenstein3DClone/res/bitmaps/";
 	strncat(filepath, filename, 128);
@@ -55,6 +57,6 @@ uint32_t wfstn3D_bitmap_getPixel(const wfstn3D_bitmap_t *const bitmap, size_t x,
 	return bitmap->pixels[x + y * bitmap->width];
 }
 
-uint32_t wfstn3D_bitmap_setPixel(const wfstn3D_bitmap_t *const bitmap, size_t x, size_t y, uint32_t value) {
+void wfstn3D_bitmap_setPixel(const wfstn3D_bitmap_t *const bitmap, size_t x, size_t y, uint32_t value) {
 	bitmap->pixels[x + y * bitmap->width] = value;
 }
