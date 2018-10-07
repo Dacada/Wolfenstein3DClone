@@ -111,15 +111,51 @@ static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, un
 		}
 	}
 
-	vertices_index++;
-	indices_index++;
-	engine3D_util_safeRealloc(vertices_array, vertices_index);
-	engine3D_util_safeRealloc(indices_array, vertices_index);
+	vertices_array = engine3D_util_safeRealloc(vertices_array, sizeof(engine3D_vertex_t) * vertices_index);
+	indices_array = engine3D_util_safeRealloc(indices_array, sizeof(unsigned int) * indices_index);
 
 	*vertices = vertices_array;
 	*indices = indices_array;
 	*vertices_len = vertices_index;
 	*indices_len = indices_index;
+}
+
+static void calcNormals(engine3D_vertex_t vertices[], size_t vertices_len, unsigned int indices[], size_t indices_len) {
+	for (size_t i = 0; i < indices_len; i += 3) {
+		int i0 = indices[i];
+		int i1 = indices[i + 1];
+		int i2 = indices[i + 2];
+
+		engine3D_vector3f_t v1, v2, normal;
+		engine3D_vector3f_sub(&vertices[i1].vec, &vertices[i0].vec, &v1);
+		engine3D_vector3f_sub(&vertices[i2].vec, &vertices[i0].vec, &v2);
+		engine3D_vector3f_cross(&v1, &v2, &normal);
+		engine3D_vector3f_normalize(&normal);
+
+		engine3D_vector3f_add(&vertices[i0].normal, &normal, &vertices[i0].normal);
+		engine3D_vector3f_add(&vertices[i1].normal, &normal, &vertices[i1].normal);
+		engine3D_vector3f_add(&vertices[i2].normal, &normal, &vertices[i2].normal);
+	}
+
+	for (size_t i = 0; i < vertices_len; i++) {
+		engine3D_vector3f_normalize(&vertices[i].normal);
+	}
+}
+
+engine3D_mesh_t * engine3D_mesh_addVertices2(engine3D_mesh_t * const mesh, engine3D_vertex_t vertices[], size_t vertices_len, unsigned int indices[], size_t indices_len, bool doCalcNormals) {
+	if (doCalcNormals)
+		calcNormals(vertices, vertices_len, indices, indices_len);
+
+	mesh->len_vbo = vertices_len;
+	mesh->len_ibo = indices_len;
+
+	glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
+	glBufferData(GL_ARRAY_BUFFER, vertices_len * sizeof(engine3D_vertex_t), vertices, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_len * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+
+	return mesh;
 }
 
 static void init(void) {
@@ -164,7 +200,7 @@ static void init(void) {
 	//};
 	generateLevel(&vertices, &vertices_len, &indices, &indices_len);
 
-	engine3D_mesh_addVertices(&mesh, vertices, vertices_len, indices, indices_len, true);
+	engine3D_mesh_addVertices2(&mesh, vertices, vertices_len, indices, indices_len, true);
 
 	engine3D_camera_init(&engine3D_transform_camera);
 	engine3D_transform_reset(&transform);
