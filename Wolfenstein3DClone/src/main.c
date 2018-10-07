@@ -46,12 +46,12 @@ static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, un
 
 			if (vertices_index + 4 >= vertices_capacity) {
 				vertices_capacity *= 2;
-				engine3D_util_safeRealloc(vertices_array, sizeof(engine3D_vertex_t) * vertices_capacity);
+				vertices_array = engine3D_util_safeRealloc(vertices_array, sizeof(engine3D_vertex_t) * vertices_capacity);
 			}
 
 			if (indices_index + 6 >= indices_capacity) {
 				indices_capacity *= 2;
-				engine3D_util_safeRealloc(indices_array, sizeof(unsigned int) * indices_capacity);
+				indices_array = engine3D_util_safeRealloc(indices_array, sizeof(unsigned int) * indices_capacity);
 			}
 
 			// FLOOR //

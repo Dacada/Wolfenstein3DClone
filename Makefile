@@ -22,7 +22,7 @@ all: CFLAGS += -O3
 all: | release
 all: release/$(FINAL)
 
-dbg: CFLAGS += -Og
+dbg: CFLAGS += -Og -fsanitize=address -fno-omit-frame-pointer
 dbg: | debug
 dbg: debug/$(FINAL)
 
@@ -31,6 +31,8 @@ prf: | profile
 prf: profile/$(FINAL)
 
 clean:
+	rm -f debug/*.o release/*.o profile/*.o
+veryclean: clean
 	rm -f debug/$(FINAL) release/$(FINAL) profile/$(FINAL)
 
 release/$(FINAL): $(RELOBJFILES) Wolfenstein3DClone/lib/Engine3D.a
