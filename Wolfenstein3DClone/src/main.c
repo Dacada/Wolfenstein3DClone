@@ -42,7 +42,7 @@ static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, un
 		for (size_t j = 0; j < level.height; j++) {
 			uint32_t pixel = wfstn3D_bitmap_getPixel(&level, i, j);
 
-			if (pixel & 0xFFFFFF == 0) {
+			if ((pixel & 0xFFFFFF) == 0) {
 				float XHigher = 1;
 				float XLower = 0;
 				float YHigher = 1;
