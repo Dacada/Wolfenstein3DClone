@@ -38,79 +38,71 @@ static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, un
 	size_t vertices_index = 0;
 	size_t indices_index = 0;
 
-	for (size_t i = 0; i < level.height; i++) {
-		for (size_t j = 0; j < level.width; j++) {
-			float XHigher = 1;
-			float XLower = 0;
-			float YHigher = 1;
-			float YLower = 0;
+	for (size_t i = 0; i < level.width; i++) {
+		for (size_t j = 0; j < level.height; j++) {
+			uint32_t pixel = wfstn3D_bitmap_getPixel(&level, i, j);
 
-			if (vertices_index + 4 >= vertices_capacity) {
-				vertices_capacity *= 2;
-				vertices_array = engine3D_util_safeRealloc(vertices_array, sizeof(engine3D_vertex_t) * vertices_capacity);
-			}
+			if (pixel & 0xFFFFFF == 0) {
+				float XHigher = 1;
+				float XLower = 0;
+				float YHigher = 1;
+				float YLower = 0;
 
-			if (indices_index + 6 >= indices_capacity) {
-				indices_capacity *= 2;
-				indices_array = engine3D_util_safeRealloc(indices_array, sizeof(unsigned int) * indices_capacity);
-			}
+				if (vertices_index + 4 >= vertices_capacity) {
+					vertices_capacity *= 2;
+					vertices_array = engine3D_util_safeRealloc(vertices_array, sizeof(engine3D_vertex_t) * vertices_capacity);
+				}
 
-			// FLOOR //
-			indices_array[indices_index++] = vertices_index + 2;
-			indices_array[indices_index++] = vertices_index + 1;
-			indices_array[indices_index++] = vertices_index + 0;
-			indices_array[indices_index++] = vertices_index + 3;
-			indices_array[indices_index++] = vertices_index + 2;
-			indices_array[indices_index++] = vertices_index + 0;
+				if (indices_index + 6 >= indices_capacity) {
+					indices_capacity *= 2;
+					indices_array = engine3D_util_safeRealloc(indices_array, sizeof(unsigned int) * indices_capacity);
+				}
 
-			vertices_array[vertices_index].vec.x = i * SPOT_WIDTH;
-			vertices_array[vertices_index].vec.y = 0;
-			vertices_array[vertices_index].vec.z = j * SPOT_LENGTH;
-			vertices_array[vertices_index].texCoord.x = XLower;
-			vertices_array[vertices_index].texCoord.y = YLower;
-			vertices_array[vertices_index].normal.x = 0;
-			vertices_array[vertices_index].normal.y = 0;
-			vertices_array[vertices_index++].normal.z = 0;
+				// FLOOR //
+				indices_array[indices_index++] = vertices_index + 2;
+				indices_array[indices_index++] = vertices_index + 1;
+				indices_array[indices_index++] = vertices_index + 0;
+				indices_array[indices_index++] = vertices_index + 3;
+				indices_array[indices_index++] = vertices_index + 2;
+				indices_array[indices_index++] = vertices_index + 0;
 
-			vertices_array[vertices_index].vec.x = (i + 1) * SPOT_WIDTH;
-			vertices_array[vertices_index].vec.y = 0;
-			vertices_array[vertices_index].vec.z = j * SPOT_LENGTH;
-			vertices_array[vertices_index].texCoord.x = XHigher;
-			vertices_array[vertices_index].texCoord.y = YLower;
-			vertices_array[vertices_index].normal.x = 0;
-			vertices_array[vertices_index].normal.y = 0;
-			vertices_array[vertices_index++].normal.z = 0;
+				vertices_array[vertices_index].vec.x = i * SPOT_WIDTH;
+				vertices_array[vertices_index].vec.y = 0;
+				vertices_array[vertices_index].vec.z = j * SPOT_LENGTH;
+				vertices_array[vertices_index].texCoord.x = XLower;
+				vertices_array[vertices_index].texCoord.y = YLower;
+				vertices_array[vertices_index].normal.x = 0;
+				vertices_array[vertices_index].normal.y = 0;
+				vertices_array[vertices_index++].normal.z = 0;
 
-			vertices_array[vertices_index].vec.x = (i + 1) * SPOT_WIDTH;
-			vertices_array[vertices_index].vec.y = 0;
-			vertices_array[vertices_index].vec.z = (j + 1) * SPOT_LENGTH;
-			vertices_array[vertices_index].texCoord.x = XHigher;
-			vertices_array[vertices_index].texCoord.y = YHigher;
-			vertices_array[vertices_index].normal.x = 0;
-			vertices_array[vertices_index].normal.y = 0;
-			vertices_array[vertices_index++].normal.z = 0;
+				vertices_array[vertices_index].vec.x = (i + 1) * SPOT_WIDTH;
+				vertices_array[vertices_index].vec.y = 0;
+				vertices_array[vertices_index].vec.z = j * SPOT_LENGTH;
+				vertices_array[vertices_index].texCoord.x = XHigher;
+				vertices_array[vertices_index].texCoord.y = YLower;
+				vertices_array[vertices_index].normal.x = 0;
+				vertices_array[vertices_index].normal.y = 0;
+				vertices_array[vertices_index++].normal.z = 0;
 
-			vertices_array[vertices_index].vec.x = i * SPOT_WIDTH;
-			vertices_array[vertices_index].vec.y = 0;
-			vertices_array[vertices_index].vec.z = (j + 1) * SPOT_LENGTH;
-			vertices_array[vertices_index].texCoord.x = XLower;
-			vertices_array[vertices_index].texCoord.y = YHigher;
-			vertices_array[vertices_index].normal.x = 0;
-			vertices_array[vertices_index].normal.y = 0;
-			vertices_array[vertices_index++].normal.z = 0;
+				vertices_array[vertices_index].vec.x = (i + 1) * SPOT_WIDTH;
+				vertices_array[vertices_index].vec.y = 0;
+				vertices_array[vertices_index].vec.z = (j + 1) * SPOT_LENGTH;
+				vertices_array[vertices_index].texCoord.x = XHigher;
+				vertices_array[vertices_index].texCoord.y = YHigher;
+				vertices_array[vertices_index].normal.x = 0;
+				vertices_array[vertices_index].normal.y = 0;
+				vertices_array[vertices_index++].normal.z = 0;
 
-			uint32_t pixel = wfstn3D_bitmap_getPixel(&level, j, i);
-			if (pixel == 0xFF000000) {
-				putchar('#');
-			}
-			else if (pixel == 0xFFFFFFFF) {
-				putchar(' ');
-			}
-			else {
-				engine3D_util_bail("Error: Level generation bitmap must be composed of black or white pixel data and 100% alpha");
+				vertices_array[vertices_index].vec.x = i * SPOT_WIDTH;
+				vertices_array[vertices_index].vec.y = 0;
+				vertices_array[vertices_index].vec.z = (j + 1) * SPOT_LENGTH;
+				vertices_array[vertices_index].texCoord.x = XLower;
+				vertices_array[vertices_index].texCoord.y = YHigher;
+				vertices_array[vertices_index].normal.x = 0;
+				vertices_array[vertices_index].normal.y = 0;
+				vertices_array[vertices_index++].normal.z = 0;
 			}
 		}
-		putchar('\n');
 	}
 
 	vertices_array = engine3D_util_safeRealloc(vertices_array, sizeof(engine3D_vertex_t) * vertices_index);
@@ -124,8 +116,8 @@ static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, un
 
 
 static void init(void) {
-	engine3D_vector3f_t c = { 1, 1, 1 };
-	engine3D_renderUtils_setClearColor(&c);
+	//engine3D_vector3f_t c = { 1, 1, 1 };
+	//engine3D_renderUtils_setClearColor(&c);
 	engine3D_resourceLoader_setResPath("../Wolfenstein3DClone/res/");
 	wfstn3D_bitmap_load("level1.png", &level);
 
