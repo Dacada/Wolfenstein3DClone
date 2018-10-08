@@ -10,6 +10,7 @@
 #include <Engine3D/engine3D_basicShader.h>
 #include <Engine3D/engine3D_texture.h>
 #include <Engine3D/engine3D_util.h>
+#include <Engine3D/engine3D_renderUtil.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -123,6 +124,8 @@ static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, un
 
 
 static void init(void) {
+	engine3D_vector3f_t c = { 1, 1, 1 };
+	engine3D_renderUtils_setClearColor(&c);
 	engine3D_resourceLoader_setResPath("../Wolfenstein3DClone/res/");
 	wfstn3D_bitmap_load("level1.png", &level);
 
