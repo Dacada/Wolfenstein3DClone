@@ -13,11 +13,14 @@
 #include <Engine3D/engine3D_renderUtil.h>
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #define SPOT_WIDTH (1.0f)
 #define SPOT_LENGTH (1.0f)
 #define SPOT_HEIGHT (1.0f)
+#define NUM_TEX_EXP (4)
+#define NUM_TEXTURES (NUM_TEX_EXP * NUM_TEX_EXP)
 
 wfstn3D_bitmap_t level;
 engine3D_basicShader_t shader;
@@ -30,6 +33,23 @@ engine3D_transform_t transform;
 engine3D_vertex_t *vertices;
 unsigned int *indices;
 
+void getTexCoords(unsigned int p, float *XLower, float *XHigher, float *YLower, float *YHigher) {
+	/*
+	 * 255 191 127  63
+	 * 239 175 111  47
+	 * 223 159  95  31
+	 * 207 143  79  15
+	 */
+
+	unsigned int texX = p / NUM_TEX_EXP;
+	unsigned int texY = p % NUM_TEX_EXP;
+
+	*XLower = 1.0f - (float)texX / (float)NUM_TEX_EXP;
+	*XHigher = *XLower - 1.0f / (float)NUM_TEX_EXP;
+	*YLower = (float)texY / (float)NUM_TEX_EXP;
+	*YHigher = *YLower + 1.0f / (float)NUM_TEX_EXP;
+}
+
 static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, unsigned int **indices, size_t *indices_len) {
 	size_t vertices_capacity = 1024;
 	size_t indices_capacity = 1024;
@@ -40,11 +60,10 @@ static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, un
 
 	for (size_t i = 0; i < level.width; i++) {
 		for (size_t j = 0; j < level.height; j++) {
+			uint32_t pixel = wfstn3D_bitmap_getPixel(&level, i, j);
 			if ((wfstn3D_bitmap_getPixel(&level, i, j) & 0xFFFFFF) != 0) {
-				float XHigher = 1;
-				float XLower = 0;
-				float YHigher = 1;
-				float YLower = 0;
+				float XLower, XHigher, YLower, YHigher;
+				getTexCoords(((pixel & 0x00FF00) >> 8) / NUM_TEXTURES, &XLower, &XHigher, &YLower, &YHigher);
 
 				if (vertices_index + 24 >= vertices_capacity) {
 					vertices_capacity *= 2;
@@ -145,6 +164,8 @@ static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, un
 				vertices_array[vertices_index++].normal.z = 0;
 
 				// WALLS //
+				getTexCoords(((pixel & 0xFF0000) >> 16) / NUM_TEXTURES, &XLower, &XHigher, &YLower, &YHigher);
+
 				if ((wfstn3D_bitmap_getPixel(&level, i, j - 1) & 0xFFFFFF) == 0) {
 					indices_array[indices_index++] = vertices_index + 0;
 					indices_array[indices_index++] = vertices_index + 1;
@@ -355,7 +376,7 @@ static void init(void) {
 	//}
 
 	engine3D_basicShader_init(&shader);
-	engine3D_resourceLoader_loadTexture("test.png", &texture);
+	engine3D_resourceLoader_loadTexture("WolfCollection.png", &texture);
 	// TODO: Create function to bind texture to material and setup default values
 	color.x = color.y = color.z = 1;
 	material.texture = &texture;
