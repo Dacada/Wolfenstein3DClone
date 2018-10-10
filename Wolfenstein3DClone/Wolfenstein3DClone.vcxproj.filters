@@ -21,9 +21,15 @@
     <ClCompile Include="src\wfstn3D_bitmap.c">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
+    <ClCompile Include="src\wfstn3D_level.c">
+      <Filter>Archivos de código fuente</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\wfstn3D_bitmap.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="include\wfstn3D_level.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
   </ItemGroup>
