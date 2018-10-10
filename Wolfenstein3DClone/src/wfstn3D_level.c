@@ -1,9 +1,11 @@
 #include <wfstn3D_level.h>
 #include <wfstn3D_bitmap.h>
 
-#include <Engine3D\engine3D_mesh.h>
-#include <Engine3D\engine3D_texture.h>
-#include <Engine3D\engine3D_vector.h>
+#include <Engine3D/engine3D_mesh.h>
+#include <Engine3D/engine3D_texture.h>
+#include <Engine3D/engine3D_vector.h>
+#include <Engine3D/engine3D_resourceLoader.h>
+#include <Engine3D/engine3D_util.h>
 
 #define SPOT_WIDTH (1.0f)
 #define SPOT_LENGTH (1.0f)
@@ -342,7 +344,7 @@ void wfstn3D_level_load(const char *const levelname, const char *const texturena
 	engine3D_texture_t *texture = malloc(sizeof(engine3D_texture_t));
 	engine3D_vector3f_t *color = malloc(sizeof(engine3D_vector3f_t));
 	level->material = malloc(sizeof(engine3D_material_t));
-	engine3D_resourceLoader_loadTexture(texturename, &texture);
+	engine3D_resourceLoader_loadTexture(texturename, texture);
 
 	// TODO: Create function to bind texture to material and setup default values
 	color->x = color->y = color->z = 1;

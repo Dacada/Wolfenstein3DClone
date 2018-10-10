@@ -1,10 +1,10 @@
 #ifndef WFSTN3D_LEVEL_H
 #define WFSTN3D_LEVEL_H
 
-#include <Engine3D\engine3D_mesh.h>
-#include <Engine3D\engine3D_basicShader.h>
-#include <Engine3D\engine3D_material.h>
-#include <Engine3D\engine3D_transform.h>
+#include <Engine3D/engine3D_mesh.h>
+#include <Engine3D/engine3D_basicShader.h>
+#include <Engine3D/engine3D_material.h>
+#include <Engine3D/engine3D_transform.h>
 #include "wfstn3D_bitmap.h"
 
 typedef struct wfstn3D_level_t {

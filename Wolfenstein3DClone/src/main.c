@@ -1,5 +1,7 @@
 #include <wfstn3D_level.h>
 
+#include <Engine3D/engine3D_main.h>
+#include <Engine3D/engine3D_window.h>
 #include <Engine3D/engine3D_input.h>
 #include <Engine3D/engine3D_time.h>
 #include <Engine3D/engine3D_transform.h>

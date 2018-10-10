@@ -56,8 +56,8 @@ void wfstn3D_bitmap_unload(wfstn3D_bitmap_t *const bitmap) {
 wfstn3D_bitmap_t *wfstn3D_bitmap_flipX(wfstn3D_bitmap_t *const bitmap) {
 	uint32_t *tmp = engine3D_util_safeMalloc(bitmap->height * bitmap->width * sizeof(uint32_t));
 
-	for (int i = 0; i < bitmap->width; i++) {
-		for (int j = 0; j < bitmap->height; j++) {
+	for (size_t i = 0; i < bitmap->width; i++) {
+		for (size_t j = 0; j < bitmap->height; j++) {
 			tmp[i + j * bitmap->width] = bitmap->pixels[(bitmap->width - i - 1) + j * bitmap->width];
 		}
 	}
@@ -69,8 +69,8 @@ wfstn3D_bitmap_t *wfstn3D_bitmap_flipX(wfstn3D_bitmap_t *const bitmap) {
 wfstn3D_bitmap_t *wfstn3D_bitmap_flipY(wfstn3D_bitmap_t *const bitmap) {
 	uint32_t *tmp = engine3D_util_safeMalloc(bitmap->height * bitmap->width * sizeof(uint32_t));
 
-	for (int i = 0; i < bitmap->width; i++) {
-		for (int j = 0; j < bitmap->height; j++) {
+	for (size_t i = 0; i < bitmap->width; i++) {
+		for (size_t j = 0; j < bitmap->height; j++) {
 			tmp[i + j * bitmap->width] = bitmap->pixels[i + (bitmap->height - j - 1) * bitmap->width];
 		}
 	}

@@ -22,7 +22,7 @@ all: CFLAGS += -O3
 all: | release
 all: release/$(FINAL)
 
-dbg: CFLAGS += -Og -fsanitize=address -fno-omit-frame-pointer
+dbg: CFLAGS += -Og -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer
 dbg: | debug
 dbg: debug/$(FINAL)
 
