@@ -7,6 +7,8 @@
 #include <Engine3D/engine3D_resourceLoader.h>
 #include <Engine3D/engine3D_util.h>
 
+#include <stdbool.h>
+
 #define SPOT_WIDTH (1.0f)
 #define SPOT_LENGTH (1.0f)
 #define SPOT_HEIGHT (1.0f)
@@ -28,6 +30,36 @@ static void getTexCoords(unsigned int p, float *XLower, float *XHigher, float *Y
 	*XHigher = *XLower - 1.0f / (float)NUM_TEX_EXP;
 	*YLower = (float)texY / (float)NUM_TEX_EXP;
 	*YHigher = *YLower + 1.0f / (float)NUM_TEX_EXP;
+}
+
+static void addFace(unsigned int *indices_array, size_t *indices_index, size_t startIndex, bool direction) {
+	if (direction) {
+		indices_array[(*indices_index)++] = startIndex + 2;
+		indices_array[(*indices_index)++] = startIndex + 1;
+		indices_array[(*indices_index)++] = startIndex + 0;
+		indices_array[(*indices_index)++] = startIndex + 3;
+		indices_array[(*indices_index)++] = startIndex + 2;
+		indices_array[(*indices_index)++] = startIndex + 0;
+	}
+	else {
+		indices_array[(*indices_index)++] = startIndex + 0;
+		indices_array[(*indices_index)++] = startIndex + 1;
+		indices_array[(*indices_index)++] = startIndex + 2;
+		indices_array[(*indices_index)++] = startIndex + 0;
+		indices_array[(*indices_index)++] = startIndex + 2;
+		indices_array[(*indices_index)++] = startIndex + 3;
+	}
+}
+
+static void addVertex(engine3D_vertex_t *vertices_array, size_t vertices_index, float vecX, float vecY, float vecZ, float texX, float texY) {
+	vertices_array[vertices_index].vec.x = vecX;
+	vertices_array[vertices_index].vec.y = vecY;
+	vertices_array[vertices_index].vec.z = vecZ;
+	vertices_array[vertices_index].texCoord.x = texX;
+	vertices_array[vertices_index].texCoord.y = texY;
+	vertices_array[vertices_index].normal.x = 0;
+	vertices_array[vertices_index].normal.y = 0;
+	vertices_array[vertices_index].normal.z = 0;
 }
 
 static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, unsigned int **indices, size_t *indices_len, wfstn3D_bitmap_t *levelBitmap) {
@@ -56,271 +88,48 @@ static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, un
 				}
 
 				// FLOOR //
-				indices_array[indices_index++] = vertices_index + 2;
-				indices_array[indices_index++] = vertices_index + 1;
-				indices_array[indices_index++] = vertices_index + 0;
-				indices_array[indices_index++] = vertices_index + 3;
-				indices_array[indices_index++] = vertices_index + 2;
-				indices_array[indices_index++] = vertices_index + 0;
-
-				vertices_array[vertices_index].vec.x = i * SPOT_WIDTH;
-				vertices_array[vertices_index].vec.y = 0;
-				vertices_array[vertices_index].vec.z = j * SPOT_LENGTH;
-				vertices_array[vertices_index].texCoord.x = XLower;
-				vertices_array[vertices_index].texCoord.y = YLower;
-				vertices_array[vertices_index].normal.x = 0;
-				vertices_array[vertices_index].normal.y = 0;
-				vertices_array[vertices_index++].normal.z = 0;
-
-				vertices_array[vertices_index].vec.x = (i + 1) * SPOT_WIDTH;
-				vertices_array[vertices_index].vec.y = 0;
-				vertices_array[vertices_index].vec.z = j * SPOT_LENGTH;
-				vertices_array[vertices_index].texCoord.x = XHigher;
-				vertices_array[vertices_index].texCoord.y = YLower;
-				vertices_array[vertices_index].normal.x = 0;
-				vertices_array[vertices_index].normal.y = 0;
-				vertices_array[vertices_index++].normal.z = 0;
-
-				vertices_array[vertices_index].vec.x = (i + 1) * SPOT_WIDTH;
-				vertices_array[vertices_index].vec.y = 0;
-				vertices_array[vertices_index].vec.z = (j + 1) * SPOT_LENGTH;
-				vertices_array[vertices_index].texCoord.x = XHigher;
-				vertices_array[vertices_index].texCoord.y = YHigher;
-				vertices_array[vertices_index].normal.x = 0;
-				vertices_array[vertices_index].normal.y = 0;
-				vertices_array[vertices_index++].normal.z = 0;
-
-				vertices_array[vertices_index].vec.x = i * SPOT_WIDTH;
-				vertices_array[vertices_index].vec.y = 0;
-				vertices_array[vertices_index].vec.z = (j + 1) * SPOT_LENGTH;
-				vertices_array[vertices_index].texCoord.x = XLower;
-				vertices_array[vertices_index].texCoord.y = YHigher;
-				vertices_array[vertices_index].normal.x = 0;
-				vertices_array[vertices_index].normal.y = 0;
-				vertices_array[vertices_index++].normal.z = 0;
+				addFace(indices_array, &indices_index, vertices_index, true);
+				addVertex(vertices_array, vertices_index++, i * SPOT_WIDTH, 0, j * SPOT_LENGTH, XLower, YLower);
+				addVertex(vertices_array, vertices_index++, (i + 1) * SPOT_WIDTH, 0, j * SPOT_LENGTH, XHigher, YLower);
+				addVertex(vertices_array, vertices_index++, (i + 1) * SPOT_WIDTH, 0, (j + 1) * SPOT_LENGTH, XHigher, YHigher);
+				addVertex(vertices_array, vertices_index++, i * SPOT_WIDTH, 0, (j + 1) * SPOT_LENGTH, XLower, YHigher);
 
 				// CEILING //
-				indices_array[indices_index++] = vertices_index + 0;
-				indices_array[indices_index++] = vertices_index + 1;
-				indices_array[indices_index++] = vertices_index + 2;
-				indices_array[indices_index++] = vertices_index + 0;
-				indices_array[indices_index++] = vertices_index + 2;
-				indices_array[indices_index++] = vertices_index + 3;
-
-				vertices_array[vertices_index].vec.x = i * SPOT_WIDTH;
-				vertices_array[vertices_index].vec.y = SPOT_HEIGHT;
-				vertices_array[vertices_index].vec.z = j * SPOT_LENGTH;
-				vertices_array[vertices_index].texCoord.x = XLower;
-				vertices_array[vertices_index].texCoord.y = YLower;
-				vertices_array[vertices_index].normal.x = 0;
-				vertices_array[vertices_index].normal.y = 0;
-				vertices_array[vertices_index++].normal.z = 0;
-
-				vertices_array[vertices_index].vec.x = (i + 1) * SPOT_WIDTH;
-				vertices_array[vertices_index].vec.y = SPOT_HEIGHT;
-				vertices_array[vertices_index].vec.z = j * SPOT_LENGTH;
-				vertices_array[vertices_index].texCoord.x = XHigher;
-				vertices_array[vertices_index].texCoord.y = YLower;
-				vertices_array[vertices_index].normal.x = 0;
-				vertices_array[vertices_index].normal.y = 0;
-				vertices_array[vertices_index++].normal.z = 0;
-
-				vertices_array[vertices_index].vec.x = (i + 1) * SPOT_WIDTH;
-				vertices_array[vertices_index].vec.y = SPOT_HEIGHT;
-				vertices_array[vertices_index].vec.z = (j + 1) * SPOT_LENGTH;
-				vertices_array[vertices_index].texCoord.x = XHigher;
-				vertices_array[vertices_index].texCoord.y = YHigher;
-				vertices_array[vertices_index].normal.x = 0;
-				vertices_array[vertices_index].normal.y = 0;
-				vertices_array[vertices_index++].normal.z = 0;
-
-				vertices_array[vertices_index].vec.x = i * SPOT_WIDTH;
-				vertices_array[vertices_index].vec.y = SPOT_HEIGHT;
-				vertices_array[vertices_index].vec.z = (j + 1) * SPOT_LENGTH;
-				vertices_array[vertices_index].texCoord.x = XLower;
-				vertices_array[vertices_index].texCoord.y = YHigher;
-				vertices_array[vertices_index].normal.x = 0;
-				vertices_array[vertices_index].normal.y = 0;
-				vertices_array[vertices_index++].normal.z = 0;
+				addFace(indices_array, &indices_index, vertices_index, false);
+				addVertex(vertices_array, vertices_index++, i * SPOT_WIDTH, SPOT_HEIGHT, j * SPOT_LENGTH, XLower, YLower);
+				addVertex(vertices_array, vertices_index++, (i + 1) * SPOT_WIDTH, SPOT_HEIGHT, j * SPOT_LENGTH, XHigher, YLower);
+				addVertex(vertices_array, vertices_index++, (i + 1) * SPOT_WIDTH, SPOT_HEIGHT, (j + 1) * SPOT_LENGTH, XHigher, YHigher);
+				addVertex(vertices_array, vertices_index++, i * SPOT_WIDTH, SPOT_HEIGHT, (j + 1) * SPOT_LENGTH, XLower, YHigher);
 
 				// WALLS //
 				getTexCoords(((pixel & 0xFF0000) >> 16) / NUM_TEXTURES, &XLower, &XHigher, &YLower, &YHigher);
-
 				if ((wfstn3D_bitmap_getPixel(levelBitmap, i, j - 1) & 0xFFFFFF) == 0) {
-					indices_array[indices_index++] = vertices_index + 0;
-					indices_array[indices_index++] = vertices_index + 1;
-					indices_array[indices_index++] = vertices_index + 2;
-					indices_array[indices_index++] = vertices_index + 0;
-					indices_array[indices_index++] = vertices_index + 2;
-					indices_array[indices_index++] = vertices_index + 3;
-
-					vertices_array[vertices_index].vec.x = i * SPOT_WIDTH;
-					vertices_array[vertices_index].vec.y = 0;
-					vertices_array[vertices_index].vec.z = j * SPOT_LENGTH;
-					vertices_array[vertices_index].texCoord.x = XLower;
-					vertices_array[vertices_index].texCoord.y = YLower;
-					vertices_array[vertices_index].normal.x = 0;
-					vertices_array[vertices_index].normal.y = 0;
-					vertices_array[vertices_index++].normal.z = 0;
-
-					vertices_array[vertices_index].vec.x = (i + 1) * SPOT_WIDTH;
-					vertices_array[vertices_index].vec.y = 0;
-					vertices_array[vertices_index].vec.z = j * SPOT_LENGTH;
-					vertices_array[vertices_index].texCoord.x = XHigher;
-					vertices_array[vertices_index].texCoord.y = YLower;
-					vertices_array[vertices_index].normal.x = 0;
-					vertices_array[vertices_index].normal.y = 0;
-					vertices_array[vertices_index++].normal.z = 0;
-
-					vertices_array[vertices_index].vec.x = (i + 1) * SPOT_WIDTH;
-					vertices_array[vertices_index].vec.y = SPOT_HEIGHT;
-					vertices_array[vertices_index].vec.z = j * SPOT_LENGTH;
-					vertices_array[vertices_index].texCoord.x = XHigher;
-					vertices_array[vertices_index].texCoord.y = YHigher;
-					vertices_array[vertices_index].normal.x = 0;
-					vertices_array[vertices_index].normal.y = 0;
-					vertices_array[vertices_index++].normal.z = 0;
-
-					vertices_array[vertices_index].vec.x = i * SPOT_WIDTH;
-					vertices_array[vertices_index].vec.y = SPOT_HEIGHT;
-					vertices_array[vertices_index].vec.z = j * SPOT_LENGTH;
-					vertices_array[vertices_index].texCoord.x = XLower;
-					vertices_array[vertices_index].texCoord.y = YHigher;
-					vertices_array[vertices_index].normal.x = 0;
-					vertices_array[vertices_index].normal.y = 0;
-					vertices_array[vertices_index++].normal.z = 0;
+					addFace(indices_array, &indices_index, vertices_index, false);
+					addVertex(vertices_array, vertices_index++, i * SPOT_WIDTH, 0, j * SPOT_LENGTH, XLower, YLower);
+					addVertex(vertices_array, vertices_index++, (i + 1) * SPOT_WIDTH, 0, j * SPOT_LENGTH, XHigher, YLower);
+					addVertex(vertices_array, vertices_index++, (i + 1) * SPOT_WIDTH, SPOT_HEIGHT, j * SPOT_LENGTH, XHigher, YHigher);
+					addVertex(vertices_array, vertices_index++, i * SPOT_WIDTH, SPOT_HEIGHT, j * SPOT_LENGTH, XLower, YHigher);
 				}
 				if ((wfstn3D_bitmap_getPixel(levelBitmap, i, j + 1) & 0xFFFFFF) == 0) {
-					indices_array[indices_index++] = vertices_index + 2;
-					indices_array[indices_index++] = vertices_index + 1;
-					indices_array[indices_index++] = vertices_index + 0;
-					indices_array[indices_index++] = vertices_index + 3;
-					indices_array[indices_index++] = vertices_index + 2;
-					indices_array[indices_index++] = vertices_index + 0;
-
-					vertices_array[vertices_index].vec.x = i * SPOT_WIDTH;
-					vertices_array[vertices_index].vec.y = 0;
-					vertices_array[vertices_index].vec.z = (j + 1) * SPOT_LENGTH;
-					vertices_array[vertices_index].texCoord.x = XLower;
-					vertices_array[vertices_index].texCoord.y = YLower;
-					vertices_array[vertices_index].normal.x = 0;
-					vertices_array[vertices_index].normal.y = 0;
-					vertices_array[vertices_index++].normal.z = 0;
-
-					vertices_array[vertices_index].vec.x = (i + 1) * SPOT_WIDTH;
-					vertices_array[vertices_index].vec.y = 0;
-					vertices_array[vertices_index].vec.z = (j + 1) * SPOT_LENGTH;
-					vertices_array[vertices_index].texCoord.x = XHigher;
-					vertices_array[vertices_index].texCoord.y = YLower;
-					vertices_array[vertices_index].normal.x = 0;
-					vertices_array[vertices_index].normal.y = 0;
-					vertices_array[vertices_index++].normal.z = 0;
-
-					vertices_array[vertices_index].vec.x = (i + 1) * SPOT_WIDTH;
-					vertices_array[vertices_index].vec.y = SPOT_HEIGHT;
-					vertices_array[vertices_index].vec.z = (j + 1) * SPOT_LENGTH;
-					vertices_array[vertices_index].texCoord.x = XHigher;
-					vertices_array[vertices_index].texCoord.y = YHigher;
-					vertices_array[vertices_index].normal.x = 0;
-					vertices_array[vertices_index].normal.y = 0;
-					vertices_array[vertices_index++].normal.z = 0;
-
-					vertices_array[vertices_index].vec.x = i * SPOT_WIDTH;
-					vertices_array[vertices_index].vec.y = SPOT_HEIGHT;
-					vertices_array[vertices_index].vec.z = (j + 1) * SPOT_LENGTH;
-					vertices_array[vertices_index].texCoord.x = XLower;
-					vertices_array[vertices_index].texCoord.y = YHigher;
-					vertices_array[vertices_index].normal.x = 0;
-					vertices_array[vertices_index].normal.y = 0;
-					vertices_array[vertices_index++].normal.z = 0;
+					addFace(indices_array, &indices_index, vertices_index, true);
+					addVertex(vertices_array, vertices_index++, i * SPOT_WIDTH, 0, (j + 1) * SPOT_LENGTH, XLower, YLower);
+					addVertex(vertices_array, vertices_index++, (i + 1) * SPOT_WIDTH, 0, (j + 1) * SPOT_LENGTH, XHigher, YLower);
+					addVertex(vertices_array, vertices_index++, (i + 1) * SPOT_WIDTH, SPOT_HEIGHT, (j + 1) * SPOT_LENGTH, XHigher, YHigher);
+					addVertex(vertices_array, vertices_index++, i * SPOT_WIDTH, SPOT_HEIGHT, (j + 1) * SPOT_LENGTH, XLower, YHigher);
 				}
 				if ((wfstn3D_bitmap_getPixel(levelBitmap, i - 1, j) & 0xFFFFFF) == 0) {
-					indices_array[indices_index++] = vertices_index + 2;
-					indices_array[indices_index++] = vertices_index + 1;
-					indices_array[indices_index++] = vertices_index + 0;
-					indices_array[indices_index++] = vertices_index + 3;
-					indices_array[indices_index++] = vertices_index + 2;
-					indices_array[indices_index++] = vertices_index + 0;
-
-					vertices_array[vertices_index].vec.x = i * SPOT_WIDTH;
-					vertices_array[vertices_index].vec.y = 0;
-					vertices_array[vertices_index].vec.z = j * SPOT_LENGTH;
-					vertices_array[vertices_index].texCoord.x = XLower;
-					vertices_array[vertices_index].texCoord.y = YLower;
-					vertices_array[vertices_index].normal.x = 0;
-					vertices_array[vertices_index].normal.y = 0;
-					vertices_array[vertices_index++].normal.z = 0;
-
-					vertices_array[vertices_index].vec.x = i * SPOT_WIDTH;
-					vertices_array[vertices_index].vec.y = 0;
-					vertices_array[vertices_index].vec.z = (j + 1) * SPOT_LENGTH;
-					vertices_array[vertices_index].texCoord.x = XHigher;
-					vertices_array[vertices_index].texCoord.y = YLower;
-					vertices_array[vertices_index].normal.x = 0;
-					vertices_array[vertices_index].normal.y = 0;
-					vertices_array[vertices_index++].normal.z = 0;
-
-					vertices_array[vertices_index].vec.x = i * SPOT_WIDTH;
-					vertices_array[vertices_index].vec.y = SPOT_HEIGHT;
-					vertices_array[vertices_index].vec.z = (j + 1) * SPOT_LENGTH;
-					vertices_array[vertices_index].texCoord.x = XHigher;
-					vertices_array[vertices_index].texCoord.y = YHigher;
-					vertices_array[vertices_index].normal.x = 0;
-					vertices_array[vertices_index].normal.y = 0;
-					vertices_array[vertices_index++].normal.z = 0;
-
-					vertices_array[vertices_index].vec.x = i * SPOT_WIDTH;
-					vertices_array[vertices_index].vec.y = SPOT_HEIGHT;
-					vertices_array[vertices_index].vec.z = j * SPOT_LENGTH;
-					vertices_array[vertices_index].texCoord.x = XLower;
-					vertices_array[vertices_index].texCoord.y = YHigher;
-					vertices_array[vertices_index].normal.x = 0;
-					vertices_array[vertices_index].normal.y = 0;
-					vertices_array[vertices_index++].normal.z = 0;
+					addFace(indices_array, &indices_index, vertices_index, true);
+					addVertex(vertices_array, vertices_index++, i * SPOT_WIDTH, 0, j * SPOT_LENGTH, XLower, YLower);
+					addVertex(vertices_array, vertices_index++, i * SPOT_WIDTH, 0, (j + 1) * SPOT_LENGTH, XHigher, YLower);
+					addVertex(vertices_array, vertices_index++, i * SPOT_WIDTH, SPOT_HEIGHT, (j + 1) * SPOT_LENGTH, XHigher, YHigher);
+					addVertex(vertices_array, vertices_index++, i * SPOT_WIDTH, SPOT_HEIGHT, j * SPOT_LENGTH, XLower, YHigher);
 				}
 				if ((wfstn3D_bitmap_getPixel(levelBitmap, i + 1, j) & 0xFFFFFF) == 0) {
-					indices_array[indices_index++] = vertices_index + 0;
-					indices_array[indices_index++] = vertices_index + 1;
-					indices_array[indices_index++] = vertices_index + 2;
-					indices_array[indices_index++] = vertices_index + 0;
-					indices_array[indices_index++] = vertices_index + 2;
-					indices_array[indices_index++] = vertices_index + 3;
-
-					vertices_array[vertices_index].vec.x = (i + 1) * SPOT_WIDTH;
-					vertices_array[vertices_index].vec.y = 0;
-					vertices_array[vertices_index].vec.z = j * SPOT_LENGTH;
-					vertices_array[vertices_index].texCoord.x = XLower;
-					vertices_array[vertices_index].texCoord.y = YLower;
-					vertices_array[vertices_index].normal.x = 0;
-					vertices_array[vertices_index].normal.y = 0;
-					vertices_array[vertices_index++].normal.z = 0;
-
-					vertices_array[vertices_index].vec.x = (i + 1) * SPOT_WIDTH;
-					vertices_array[vertices_index].vec.y = 0;
-					vertices_array[vertices_index].vec.z = (j + 1) * SPOT_LENGTH;
-					vertices_array[vertices_index].texCoord.x = XHigher;
-					vertices_array[vertices_index].texCoord.y = YLower;
-					vertices_array[vertices_index].normal.x = 0;
-					vertices_array[vertices_index].normal.y = 0;
-					vertices_array[vertices_index++].normal.z = 0;
-
-					vertices_array[vertices_index].vec.x = (i + 1) * SPOT_WIDTH;
-					vertices_array[vertices_index].vec.y = SPOT_HEIGHT;
-					vertices_array[vertices_index].vec.z = (j + 1) * SPOT_LENGTH;
-					vertices_array[vertices_index].texCoord.x = XHigher;
-					vertices_array[vertices_index].texCoord.y = YHigher;
-					vertices_array[vertices_index].normal.x = 0;
-					vertices_array[vertices_index].normal.y = 0;
-					vertices_array[vertices_index++].normal.z = 0;
-
-					vertices_array[vertices_index].vec.x = (i + 1) * SPOT_WIDTH;
-					vertices_array[vertices_index].vec.y = SPOT_HEIGHT;
-					vertices_array[vertices_index].vec.z = j * SPOT_LENGTH;
-					vertices_array[vertices_index].texCoord.x = XLower;
-					vertices_array[vertices_index].texCoord.y = YHigher;
-					vertices_array[vertices_index].normal.x = 0;
-					vertices_array[vertices_index].normal.y = 0;
-					vertices_array[vertices_index++].normal.z = 0;
+					addFace(indices_array, &indices_index, vertices_index, false);
+					addVertex(vertices_array, vertices_index++, (i + 1) * SPOT_WIDTH, 0, j * SPOT_LENGTH, XLower, YLower);
+					addVertex(vertices_array, vertices_index++, (i + 1) * SPOT_WIDTH, 0, (j + 1) * SPOT_LENGTH, XHigher, YLower);
+					addVertex(vertices_array, vertices_index++, (i + 1) * SPOT_WIDTH, SPOT_HEIGHT, (j + 1) * SPOT_LENGTH, XHigher, YHigher);
+					addVertex(vertices_array, vertices_index++, (i + 1) * SPOT_WIDTH, SPOT_HEIGHT, j * SPOT_LENGTH, XLower, YHigher);
 				}
 			}
 		}
@@ -359,14 +168,13 @@ void wfstn3D_level_load(const char *const levelname, const char *const texturena
 	size_t vertices_len, indices_len;
 	engine3D_vertex_t *vertices;
 	unsigned int *indices;
-
 	generateLevel(&vertices, &vertices_len, &indices, &indices_len, level->bitmap);
-
-	free(vertices);
-	free(indices);
 
 	engine3D_mesh_addVertices(level->mesh, vertices, vertices_len, indices, indices_len, true);
 	//engine3D_mesh_addVertices(&mesh, vertices, 4, indices, 6, true);
+
+	free(vertices);
+	free(indices);
 
 	level->transform = malloc(sizeof(engine3D_transform_t));
 	engine3D_transform_reset(level->transform);
