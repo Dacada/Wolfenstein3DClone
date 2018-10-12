@@ -6,11 +6,15 @@
 
 #include <stdbool.h>
 
-#define MOUSE_SENSITIVITY (350.0f)
-#define MOVE_SPEED (10.0f)
+#include <string.h>
 
-void wfstn3D_player_init(const engine3D_vector3f_t *const position, wfstn3D_player_t *const player) {
+#define MOUSE_SENSITIVITY (1000.0f)
+#define MOVE_SPEED (10.0f)
+#define PLAYER_SIZE (0.3f)
+
+void wfstn3D_player_init(const engine3D_vector3f_t *const position, const wfstn3D_level_t *const level, wfstn3D_player_t *const player) {
 	player->camera = malloc(sizeof(engine3D_camera_t));
+	player->level = level;
 	engine3D_camera_init(player->camera);
 	player->camera->pos.x = position->x;
 	player->camera->pos.y = position->y;
@@ -25,8 +29,6 @@ void wfstn3D_player_init(const engine3D_vector3f_t *const position, wfstn3D_play
 
 void wfstn3D_player_input(wfstn3D_player_t *const player) {
 	float delta = (float)engine3D_time_getDelta();
-
-	float movAmt = delta * MOVE_SPEED;
 
 	static bool mouseLock = false;
 	int centerPositionX, centerPositionY;
@@ -71,12 +73,6 @@ void wfstn3D_player_input(wfstn3D_player_t *const player) {
 		//engine3D_camera_move(player->camera, &vec, movAmt);
 	}
 
-	player->movementVector.y = 0;
-	if (engine3D_vector3f_length(&player->movementVector) > 0) {
-		engine3D_vector3f_normalize(&player->movementVector);
-	}
-	engine3D_camera_move(player->camera, &player->movementVector, movAmt);
-
 	if (mouseLock) {
 		engine3D_vector2f_t pos, deltaPos;
 		engine3D_input_getMousePosition(&pos);
@@ -97,6 +93,22 @@ void wfstn3D_player_input(wfstn3D_player_t *const player) {
 }
 
 void wfstn3D_player_update(wfstn3D_player_t *const player) {
+	float delta = (float)engine3D_time_getDelta();
+	float movAmt = delta * MOVE_SPEED;
+
+	player->movementVector.y = 0;
+	if (engine3D_vector3f_length(&player->movementVector) > 0) {
+		engine3D_vector3f_normalize(&player->movementVector);
+	}
+
+	engine3D_vector3f_t newPos, tmp, collisionVector;
+	engine3D_vector3f_mulf(&player->movementVector, movAmt, &tmp);
+	engine3D_vector3f_add(&player->camera->pos, &tmp, &newPos);
+	wfstn3D_level_checkCollision(&player->camera->pos, &newPos, PLAYER_SIZE, PLAYER_SIZE, &collisionVector, player->level);
+	engine3D_vector3f_mul(&player->movementVector, &collisionVector, &tmp);
+	memcpy(&player->movementVector, &tmp, sizeof(engine3D_vector3f_t));
+
+	engine3D_camera_move(player->camera, &player->movementVector, movAmt);
 }
 
 void wfstn3D_player_render(wfstn3D_player_t *const player) {

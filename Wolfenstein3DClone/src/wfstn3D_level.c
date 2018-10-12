@@ -9,6 +9,8 @@
 
 #include <stdbool.h>
 
+#include <string.h>
+
 #define SPOT_WIDTH (1.0f)
 #define SPOT_LENGTH (1.0f)
 #define SPOT_HEIGHT (1.0f)
@@ -207,4 +209,51 @@ void wfstn3D_level_unload(wfstn3D_level_t *const level) {
 	free(level->material);
 	free(level->mesh);
 	free(level->transform);
+}
+
+static void rectCollide(const engine3D_vector2f_t *const oldPos, const engine3D_vector2f_t *const newPos, const engine3D_vector2f_t *const size1, const engine3D_vector2f_t *const pos2, const engine3D_vector2f_t *const size2, engine3D_vector2f_t *const result) {
+	result->x = 0;
+	result->y = 0;
+
+	if (newPos->x + size1->x < pos2->x ||
+		newPos->x - size1->x > pos2->x + size2->x * size2->x ||
+		oldPos->y + size1->y < pos2->y ||
+		oldPos->y - size1->y > pos2->y + size2->y * size2->y)
+		result->x = 1;
+
+	if (oldPos->x + size1->x < pos2->x ||
+		oldPos->x - size1->x > pos2->x + size2->x * size2->x ||
+		newPos->y + size1->y < pos2->y ||
+		newPos->y - size1->y > pos2->y + size2->y * size2->y)
+		result->y = 1;
+}
+
+void wfstn3D_level_checkCollision(const engine3D_vector3f_t *const oldPos, const engine3D_vector3f_t *const newPos, float objectWidth, float objectLength, engine3D_vector3f_t *const result, const wfstn3D_level_t *const level) {
+	engine3D_vector2f_t collisionVector = { 1, 1 };
+	engine3D_vector3f_t movementVector;
+	engine3D_vector3f_sub(newPos, oldPos, &movementVector);
+
+	if (engine3D_vector3f_length(&movementVector) > 0) {
+		engine3D_vector2f_t blockSize = { SPOT_WIDTH, SPOT_LENGTH };
+		engine3D_vector2f_t objectSize = { objectWidth, objectLength };
+
+		engine3D_vector2f_t oldPos2 = { oldPos->x, oldPos->z };
+		engine3D_vector2f_t newPos2 = { newPos->x, newPos->z };
+
+		for (size_t i = 0; i < level->bitmap->width; i++) {
+			for (size_t j = 0; j < level->bitmap->height; j++) {
+				uint32_t pixel = wfstn3D_bitmap_getPixel(level->bitmap, i, j);
+				if ((pixel & 0xFFFFFF) == 0) {
+					engine3D_vector2f_t tmp, tmp2, pixPos = { i, j };
+					rectCollide(&oldPos2, &newPos2, &objectSize, engine3D_vector2f_mul(&blockSize, &pixPos, &tmp), &blockSize, &tmp2);
+					engine3D_vector2f_mul(&collisionVector, &tmp2, &tmp);
+					memcpy(&collisionVector, &tmp, sizeof(engine3D_vector2f_t));
+				}
+			}
+		}
+	}
+
+	result->x = collisionVector.x;
+	result->y = 0;
+	result->z = collisionVector.y;
 }

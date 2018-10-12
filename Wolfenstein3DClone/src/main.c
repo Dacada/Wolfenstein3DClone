@@ -20,8 +20,8 @@ static void init(void) {
 
 	wfstn3D_level_load("level1.png", "WolfCollection.png", &level);
 
-	engine3D_vector3f_t playerPos = { 0, 0.4375f, 0 };
-	wfstn3D_player_init(&playerPos, &player);
+	engine3D_vector3f_t playerPos = { 14, 0.4375f, 28 };
+	wfstn3D_player_init(&playerPos, &level, &player);
 
 	engine3D_transform_camera = player.camera;
 	engine3D_transform_fov = 70;
@@ -36,6 +36,10 @@ static void init(void) {
 static void input(void) {
 	wfstn3D_level_input(&level);
 	wfstn3D_player_input(&player);
+
+	if (engine3D_input_getKey(GLFW_KEY_ENTER)) {
+		engine3D_vector3f_fprintf(stdout, &player.camera->pos);
+	}
 }
 
 static void update(void) {

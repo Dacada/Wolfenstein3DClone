@@ -25,4 +25,6 @@ void wfstn3D_level_render(const wfstn3D_level_t *const level);
 
 void wfstn3D_level_unload(wfstn3D_level_t *const level);
 
+void wfstn3D_level_checkCollision(const engine3D_vector3f_t *const oldPos, const engine3D_vector3f_t *const newPos, float objectWidth, float objectLength, engine3D_vector3f_t *const result, const wfstn3D_level_t *const level);
+
 #endif
