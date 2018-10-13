@@ -82,11 +82,11 @@ static void addDoor(wfstn3D_level_t *level, size_t i, size_t j) {
 	if (yDoor) {
 		transform.translation.x = i;
 		transform.translation.y = 0;
-		transform.translation.z = j;
+		transform.translation.z = j + SPOT_WIDTH / 2;
 	}
 
 	if (xDoor) {
-		transform.translation.x = i;
+		transform.translation.x = i + SPOT_WIDTH / 2;
 		transform.translation.y = 0;
 		transform.translation.z = j;
 
