@@ -1,10 +1,10 @@
 #include <wfstn3D_door.h>
 
-#include <Engine3D\engine3D_util.h>
-#include <Engine3D\engine3D_vector.h>
-#include <Engine3D\engine3D_shader.h>
-#include <Engine3D\engine3D_vertex.h>
-#include <Engine3D\engine3D_mesh.h>
+#include <Engine3D/engine3D_util.h>
+#include <Engine3D/engine3D_vector.h>
+#include <Engine3D/engine3D_shader.h>
+#include <Engine3D/engine3D_vertex.h>
+#include <Engine3D/engine3D_mesh.h>
 
 #include <stdbool.h>
 
@@ -13,7 +13,7 @@
 static engine3D_mesh_t mesh;
 static bool meshIsLoaded = false;
 
-void wfstn3D_door_init(wfstn3D_door_t *const door, const engine3D_transform_t *const transform, const engine3D_material_t *const material, const wfstn3D_level_t *const level) {
+void wfstn3D_door_init(wfstn3D_door_t *const door, const engine3D_transform_t *const transform, engine3D_material_t *const material, wfstn3D_level_t *const level) {
 	memcpy(&door->transform, transform, sizeof(engine3D_transform_t));
 	door->material = material;
 	door->level = level;
@@ -22,17 +22,17 @@ void wfstn3D_door_init(wfstn3D_door_t *const door, const engine3D_transform_t *c
 									 	   { { WFSTN3D_DOOR_START ,WFSTN3D_DOOR_HEIGHT,WFSTN3D_DOOR_START },{ 0.50f,0.25f },{ 0,0,0 } },
 								 		   { { WFSTN3D_DOOR_LENGTH,WFSTN3D_DOOR_HEIGHT,WFSTN3D_DOOR_START },{ 0.75f,0.25f },{ 0,0,0 } },
 										   { { WFSTN3D_DOOR_LENGTH,WFSTN3D_DOOR_START ,WFSTN3D_DOOR_START },{ 0.75f,0.00f },{ 0,0,0 } },
-										   	   
+
 										   { { WFSTN3D_DOOR_START ,WFSTN3D_DOOR_START ,WFSTN3D_DOOR_START },{ 0.73f,0.00f },{ 0,0,0 } },
 										   { { WFSTN3D_DOOR_START ,WFSTN3D_DOOR_HEIGHT,WFSTN3D_DOOR_START },{ 0.73f,0.25f },{ 0,0,0 } },
 										   { { WFSTN3D_DOOR_START ,WFSTN3D_DOOR_HEIGHT,WFSTN3D_DOOR_WIDTH },{ 0.75f,0.25f },{ 0,0,0 } },
 										   { { WFSTN3D_DOOR_START ,WFSTN3D_DOOR_START ,WFSTN3D_DOOR_WIDTH },{ 0.75f,0.00f },{ 0,0,0 } },
-										   	   
+
 										   { { WFSTN3D_DOOR_START ,WFSTN3D_DOOR_START ,WFSTN3D_DOOR_WIDTH },{ 0.50f,0.00f },{ 0,0,0 } },
 										   { { WFSTN3D_DOOR_START ,WFSTN3D_DOOR_HEIGHT,WFSTN3D_DOOR_WIDTH },{ 0.50f,0.25f },{ 0,0,0 } },
 										   { { WFSTN3D_DOOR_LENGTH,WFSTN3D_DOOR_HEIGHT,WFSTN3D_DOOR_WIDTH },{ 0.75f,0.25f },{ 0,0,0 } },
 										   { { WFSTN3D_DOOR_LENGTH,WFSTN3D_DOOR_START ,WFSTN3D_DOOR_WIDTH },{ 0.75f,0.00f },{ 0,0,0 } },
-										   	   
+
 										   { { WFSTN3D_DOOR_LENGTH,WFSTN3D_DOOR_START ,WFSTN3D_DOOR_START },{ 0.73f,0.00f },{ 0,0,0 } },
 										   { { WFSTN3D_DOOR_LENGTH,WFSTN3D_DOOR_HEIGHT,WFSTN3D_DOOR_START },{ 0.73f,0.25f },{ 0,0,0 } },
 										   { { WFSTN3D_DOOR_LENGTH,WFSTN3D_DOOR_HEIGHT,WFSTN3D_DOOR_WIDTH },{ 0.75f,0.25f },{ 0,0,0 } },
@@ -43,13 +43,13 @@ void wfstn3D_door_init(wfstn3D_door_t *const door, const engine3D_transform_t *c
 
 									  6, 5, 4,
 									  7, 6, 4,
-		
+
 									 10, 9, 8,
 									 11,10, 8,
 
 			                         12,13,14,
 			                         12,14,15 };
-		
+
 		engine3D_mesh_init(&mesh);
 		engine3D_mesh_addVertices(&mesh, vertices, 16, indices, 24, true);
 
@@ -77,4 +77,5 @@ void wfstn3D_door_render(wfstn3D_door_t *const door) {
 }
 
 void wfstn3D_door_cleanup(wfstn3D_door_t *const door) {
+	(void)door;
 }

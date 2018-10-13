@@ -96,7 +96,7 @@ static void addDoor(wfstn3D_level_t *level, size_t i, size_t j) {
 	}
 
 	size_t doorIndex = level->doorsLen++;
-	level->doors = engine3D_util_safeRealloc(level->doors, level->doorsLen);
+	level->doors = engine3D_util_safeRealloc(level->doors, sizeof(wfstn3D_door_t) * level->doorsLen);
 	wfstn3D_door_init(level->doors + doorIndex, &transform, level->material, level);
 }
 

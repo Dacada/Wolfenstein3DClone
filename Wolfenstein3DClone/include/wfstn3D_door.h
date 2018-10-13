@@ -3,7 +3,7 @@
 
 #include "wfstn3D_level.h"
 
-#include <Engine3D\engine3D_transform.h>
+#include <Engine3D/engine3D_transform.h>
 
 #define WFSTN3D_DOOR_LENGTH (1.0f)
 #define WFSTN3D_DOOR_HEIGHT (1.0f)
@@ -16,7 +16,7 @@ typedef struct wfstn3D_door_t {
 	wfstn3D_level_t *level;
 } wfstn3D_door_t;
 
-void wfstn3D_door_init(wfstn3D_door_t *const door, const engine3D_transform_t *const transform, const engine3D_material_t *const material, const wfstn3D_level_t *const level);
+void wfstn3D_door_init(wfstn3D_door_t *const door, const engine3D_transform_t *const transform, engine3D_material_t *const material, wfstn3D_level_t *const level);
 
 void wfstn3D_door_input(wfstn3D_door_t *const door);
 
