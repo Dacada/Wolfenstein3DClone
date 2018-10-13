@@ -144,11 +144,13 @@
   <ItemGroup>
     <ClCompile Include="src\wfstn3D_bitmap.c" />
     <ClCompile Include="src\main.c" />
+    <ClCompile Include="src\wfstn3D_door.c" />
     <ClCompile Include="src\wfstn3D_level.c" />
     <ClCompile Include="src\wfstn3D_player.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\wfstn3D_bitmap.h" />
+    <ClInclude Include="include\wfstn3D_door.h" />
     <ClInclude Include="include\wfstn3D_level.h" />
     <ClInclude Include="include\wfstn3D_player.h" />
   </ItemGroup>

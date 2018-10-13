@@ -1,6 +1,8 @@
 #include <wfstn3D_level.h>
 #include <wfstn3D_bitmap.h>
 
+#include <wfstn3D_door.h>
+
 #include <Engine3D/engine3D_mesh.h>
 #include <Engine3D/engine3D_texture.h>
 #include <Engine3D/engine3D_vector.h>
@@ -64,7 +66,47 @@ static void addVertex(engine3D_vertex_t *vertices_array, size_t vertices_index, 
 	vertices_array[vertices_index].normal.z = 0;
 }
 
-static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, unsigned int **indices, size_t *indices_len, wfstn3D_bitmap_t *levelBitmap) {
+static void addDoor(wfstn3D_level_t *level, size_t i, size_t j) {
+	wfstn3D_bitmap_t *levelBitmap = level->bitmap;
+
+	engine3D_transform_t transform;
+	engine3D_transform_reset(&transform);
+
+	bool xDoor = (wfstn3D_bitmap_getPixel(levelBitmap, i, j - 1) & 0xFFFFFF) == 0 && (wfstn3D_bitmap_getPixel(levelBitmap, i, j + 1) & 0xFFFFFF) == 0;
+	bool yDoor = (wfstn3D_bitmap_getPixel(levelBitmap, i - 1, j) & 0xFFFFFF) == 0 && (wfstn3D_bitmap_getPixel(levelBitmap, i + 1, j) & 0xFFFFFF) == 0;
+
+	if (xDoor == yDoor) { // not xor
+		engine3D_util_bail("door detected in invalid location during level generation");
+	}
+
+	if (yDoor) {
+		transform.translation.x = i;
+		transform.translation.y = 0;
+		transform.translation.z = j;
+	}
+
+	if (xDoor) {
+		transform.translation.x = i;
+		transform.translation.y = 0;
+		transform.translation.z = j;
+
+		transform.rotation.x = 0;
+		transform.rotation.y = 90;
+		transform.rotation.z = 0;
+	}
+
+	size_t doorIndex = level->doorsLen++;
+	level->doors = engine3D_util_safeRealloc(level->doors, level->doorsLen);
+	wfstn3D_door_init(level->doors + doorIndex, &transform, level->material, level);
+}
+
+static void addSpecial(unsigned int blueValue, wfstn3D_level_t *level, size_t i, size_t j) {
+	if (blueValue == 16)
+		addDoor(level, i, j);
+}
+
+static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, unsigned int **indices, size_t *indices_len, wfstn3D_level_t *level) {
+	wfstn3D_bitmap_t *levelBitmap = level->bitmap;
 	size_t vertices_capacity = 1024;
 	size_t indices_capacity = 1024;
 	engine3D_vertex_t *vertices_array = engine3D_util_safeMalloc(sizeof(engine3D_vertex_t) * vertices_capacity);
@@ -75,9 +117,11 @@ static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, un
 	for (size_t i = 0; i < levelBitmap->width; i++) {
 		for (size_t j = 0; j < levelBitmap->height; j++) {
 			uint32_t pixel = wfstn3D_bitmap_getPixel(levelBitmap, i, j);
-			if ((wfstn3D_bitmap_getPixel(levelBitmap, i, j) & 0xFFFFFF) != 0) {
+			if ((pixel & 0xFFFFFF) != 0) {
 				float XLower, XHigher, YLower, YHigher;
 				getTexCoords(((pixel & 0x00FF00) >> 8) / NUM_TEXTURES, &XLower, &XHigher, &YLower, &YHigher);
+
+				addSpecial(pixel & 0x0000FF, level, i, j);
 
 				if (vertices_index + 24 >= vertices_capacity) {
 					vertices_capacity *= 2;
@@ -147,14 +191,17 @@ static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, un
 }
 
 void wfstn3D_level_load(const char *const levelname, const char *const texturename, wfstn3D_level_t *const level) {
-	level->bitmap = malloc(sizeof(wfstn3D_bitmap_t));
+	level->doorsLen = 0;
+	level->doors = NULL;
+
+	level->bitmap = engine3D_util_safeMalloc(sizeof(wfstn3D_bitmap_t));
 	wfstn3D_bitmap_load(levelname, level->bitmap);
 
-	level->shader = malloc(sizeof(engine3D_basicShader_t));
+	level->shader = engine3D_util_safeMalloc(sizeof(engine3D_basicShader_t));
 	engine3D_basicShader_init(level->shader);
-	engine3D_texture_t *texture = malloc(sizeof(engine3D_texture_t));
-	engine3D_vector3f_t *color = malloc(sizeof(engine3D_vector3f_t));
-	level->material = malloc(sizeof(engine3D_material_t));
+	engine3D_texture_t *texture = engine3D_util_safeMalloc(sizeof(engine3D_texture_t));
+	engine3D_vector3f_t *color = engine3D_util_safeMalloc(sizeof(engine3D_vector3f_t));
+	level->material = engine3D_util_safeMalloc(sizeof(engine3D_material_t));
 	engine3D_resourceLoader_loadTexture(texturename, texture);
 
 	// TODO: Create function to bind texture to material and setup default values
@@ -164,13 +211,13 @@ void wfstn3D_level_load(const char *const levelname, const char *const texturena
 	level->material->specularIntensity = 0;
 	level->material->specularPower = 0;
 
-	level->mesh = malloc(sizeof(engine3D_mesh_t));
+	level->mesh = engine3D_util_safeMalloc(sizeof(engine3D_mesh_t));
 	engine3D_mesh_init(level->mesh);
 
 	size_t vertices_len, indices_len;
 	engine3D_vertex_t *vertices;
 	unsigned int *indices;
-	generateLevel(&vertices, &vertices_len, &indices, &indices_len, level->bitmap);
+	generateLevel(&vertices, &vertices_len, &indices, &indices_len, level);
 
 	engine3D_mesh_addVertices(level->mesh, vertices, vertices_len, indices, indices_len, true);
 	//engine3D_mesh_addVertices(&mesh, vertices, 4, indices, 6, true);
@@ -178,16 +225,26 @@ void wfstn3D_level_load(const char *const levelname, const char *const texturena
 	free(vertices);
 	free(indices);
 
-	level->transform = malloc(sizeof(engine3D_transform_t));
+	level->transform = engine3D_util_safeMalloc(sizeof(engine3D_transform_t));
 	engine3D_transform_reset(level->transform);
+
+	//level->door = engine3D_util_safeMalloc(sizeof(wfstn3D_door_t));
+	//engine3D_transform_t *tmp = engine3D_util_safeMalloc(sizeof(engine3D_transform_t));
+	//engine3D_transform_reset(tmp);
+	//tmp->translation.x = 16; tmp->translation.y = 0; tmp->translation.z = 28;
+	//wfstn3D_door_init(level->door, tmp, level->material, level);
 }
 
 void wfstn3D_level_input(const wfstn3D_level_t *const level) {
-	(void)level;
+	for (size_t i = 0; i < level->doorsLen; i++) {
+		wfstn3D_door_input(level->doors + i);
+	}
 }
 
 void wfstn3D_level_update(const wfstn3D_level_t *const level) {
-	(void)level;
+	for (size_t i = 0; i < level->doorsLen; i++) {
+		wfstn3D_door_update(level->doors + i);
+	}
 }
 
 void wfstn3D_level_render(const wfstn3D_level_t *const level) {
@@ -198,9 +255,19 @@ void wfstn3D_level_render(const wfstn3D_level_t *const level) {
 	engine3D_transform_getProjectedTransformation(level->transform, &projectedMatrix);
 	engine3D_basicShader_updateUniforms(level->shader, &worldMatrix, &projectedMatrix, level->material);
 	engine3D_mesh_draw(level->mesh);
+
+	//wfstn3D_door_render(level->door);
+	for (size_t i = 0; i < level->doorsLen; i++) {
+		wfstn3D_door_render(level->doors + i);
+	}
 }
 
 void wfstn3D_level_unload(wfstn3D_level_t *const level) {
+	for (size_t i = 0; i < level->doorsLen; i++) {
+		wfstn3D_door_cleanup(level->doors + i);
+	}
+	free(level->doors);
+
 	wfstn3D_bitmap_unload(level->bitmap);
 	free(level->bitmap);
 	free(level->shader);
@@ -251,6 +318,13 @@ void wfstn3D_level_checkCollision(const engine3D_vector3f_t *const oldPos, const
 				}
 			}
 		}
+
+		//engine3D_vector2f_t tmp, tmp2, doorPos2, doorSize = { WFSTN3D_DOOR_LENGTH, WFSTN3D_DOOR_WIDTH };
+		//doorPos2.x = level->door->transform.translation.x;
+		//doorPos2.y = level->door->transform.translation.z;
+		//rectCollide(&oldPos2, &newPos2, &objectSize, &doorPos2, &doorSize, &tmp);
+		//engine3D_vector2f_mul(&collisionVector, &tmp, &tmp2);
+		//memcpy(&collisionVector, &tmp2, sizeof(engine3D_vector2f_t));
 	}
 
 	result->x = collisionVector.x;

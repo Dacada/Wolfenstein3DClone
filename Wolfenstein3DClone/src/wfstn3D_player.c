@@ -1,5 +1,6 @@
 #include <wfstn3D_player.h>
 
+#include <Engine3D\engine3D_util.h>
 #include <Engine3D\engine3D_input.h>
 #include <Engine3D\engine3D_time.h>
 #include <Engine3D\engine3D_window.h>
@@ -13,7 +14,7 @@
 #define PLAYER_SIZE (0.3f)
 
 void wfstn3D_player_init(const engine3D_vector3f_t *const position, const wfstn3D_level_t *const level, wfstn3D_player_t *const player) {
-	player->camera = malloc(sizeof(engine3D_camera_t));
+	player->camera = engine3D_util_safeMalloc(sizeof(engine3D_camera_t));
 	player->level = level;
 	engine3D_camera_init(player->camera);
 	player->camera->pos.x = position->x;
