@@ -6,6 +6,7 @@
 #include <Engine3D/engine3D_material.h>
 #include <Engine3D/engine3D_transform.h>
 #include "wfstn3D_bitmap.h"
+#include "wfstn3D_player.h"
 
 // door already includes level in order to be able to have a reference to its level 
 // but level also needs a reference to door in order to hold an array of doors it owns
@@ -19,6 +20,7 @@ typedef struct wfstn3D_level_t {
 	engine3D_transform_t *transform;
 	struct wfstn3D_door_t *doors;
 	size_t doorsLen;
+	wfstn3D_player_t *player;
 } wfstn3D_level_t;
 
 void wfstn3D_level_load(const char *const levelname, const char *const texturename, wfstn3D_level_t *const level);

@@ -8,6 +8,7 @@
 #include <Engine3D/engine3D_vector.h>
 #include <Engine3D/engine3D_resourceLoader.h>
 #include <Engine3D/engine3D_util.h>
+#include <Engine3D/engine3D_input.h>
 
 #include <stdbool.h>
 
@@ -18,6 +19,8 @@
 #define SPOT_HEIGHT (1.0f)
 #define NUM_TEX_EXP (4)
 #define NUM_TEXTURES (NUM_TEX_EXP * NUM_TEX_EXP)
+#define OPEN_DISTANCE (1.0f)
+#define OPEN_MOVEMENT_AMOUNT (0.9f)
 
 static void getTexCoords(unsigned int p, float *XLower, float *XHigher, float *YLower, float *YHigher) {
 	/*
@@ -79,10 +82,15 @@ static void addDoor(wfstn3D_level_t *level, size_t i, size_t j) {
 		engine3D_util_bail("door detected in invalid location during level generation");
 	}
 
+	engine3D_vector3f_t openPosition;
+
 	if (yDoor) {
 		transform.translation.x = i;
 		transform.translation.y = 0;
 		transform.translation.z = j + SPOT_WIDTH / 2;
+
+		memcpy(&openPosition, &transform.translation, sizeof(engine3D_transform_t));
+		openPosition.x -= OPEN_MOVEMENT_AMOUNT;
 	}
 
 	if (xDoor) {
@@ -93,11 +101,14 @@ static void addDoor(wfstn3D_level_t *level, size_t i, size_t j) {
 		transform.rotation.x = 0;
 		transform.rotation.y = 90;
 		transform.rotation.z = 0;
+
+		memcpy(&openPosition, &transform.translation, sizeof(engine3D_transform_t));
+		openPosition.z -= OPEN_MOVEMENT_AMOUNT;
 	}
 
 	size_t doorIndex = level->doorsLen++;
 	level->doors = engine3D_util_safeRealloc(level->doors, sizeof(wfstn3D_door_t) * level->doorsLen);
-	wfstn3D_door_init(level->doors + doorIndex, &transform, level->material, level);
+	wfstn3D_door_init(level->doors + doorIndex, &transform, level->material, level, &openPosition);
 }
 
 static void addSpecial(unsigned int blueValue, wfstn3D_level_t *level, size_t i, size_t j) {
@@ -236,12 +247,24 @@ void wfstn3D_level_load(const char *const levelname, const char *const texturena
 }
 
 void wfstn3D_level_input(const wfstn3D_level_t *const level) {
+	if (engine3D_input_getKeyDown(GLFW_KEY_E)) {
+		for (int i = 0; i < level->doorsLen; i++) {
+			wfstn3D_door_t *door = level->doors + i;
+			engine3D_vector3f_t tmp;
+			if (engine3D_vector3f_length(engine3D_vector3f_sub(&door->transform.translation, &level->player->camera->pos, &tmp)) < OPEN_DISTANCE) {
+				wfstn3D_door_open(door);
+			}
+		}
+	}
+
+	wfstn3D_player_input(level->player);
 	for (size_t i = 0; i < level->doorsLen; i++) {
 		wfstn3D_door_input(level->doors + i);
 	}
 }
 
 void wfstn3D_level_update(const wfstn3D_level_t *const level) {
+	wfstn3D_player_update(level->player);
 	for (size_t i = 0; i < level->doorsLen; i++) {
 		wfstn3D_door_update(level->doors + i);
 	}
@@ -256,13 +279,14 @@ void wfstn3D_level_render(const wfstn3D_level_t *const level) {
 	engine3D_basicShader_updateUniforms(level->shader, &worldMatrix, &projectedMatrix, level->material);
 	engine3D_mesh_draw(level->mesh);
 
-	//wfstn3D_door_render(level->door);
+	wfstn3D_player_render(level->player);
 	for (size_t i = 0; i < level->doorsLen; i++) {
 		wfstn3D_door_render(level->doors + i);
 	}
 }
 
 void wfstn3D_level_unload(wfstn3D_level_t *const level) {
+	wfstn3D_player_cleanup(level->player);
 	for (size_t i = 0; i < level->doorsLen; i++) {
 		wfstn3D_door_cleanup(level->doors + i);
 	}
@@ -319,12 +343,15 @@ void wfstn3D_level_checkCollision(const engine3D_vector3f_t *const oldPos, const
 			}
 		}
 
-		//engine3D_vector2f_t tmp, tmp2, doorPos2, doorSize = { WFSTN3D_DOOR_LENGTH, WFSTN3D_DOOR_WIDTH };
-		//doorPos2.x = level->door->transform.translation.x;
-		//doorPos2.y = level->door->transform.translation.z;
-		//rectCollide(&oldPos2, &newPos2, &objectSize, &doorPos2, &doorSize, &tmp);
-		//engine3D_vector2f_mul(&collisionVector, &tmp, &tmp2);
-		//memcpy(&collisionVector, &tmp2, sizeof(engine3D_vector2f_t));
+		// TODO: Orientation
+		for (int i = 0; i < level->doorsLen; i++) {
+			engine3D_vector2f_t tmp, tmp2, doorPos2, doorSize = { WFSTN3D_DOOR_LENGTH, WFSTN3D_DOOR_WIDTH };
+			doorPos2.x = level->doors[i].transform.translation.x;
+			doorPos2.y = level->doors[i].transform.translation.z;
+			rectCollide(&oldPos2, &newPos2, &objectSize, &doorPos2, &doorSize, &tmp);
+			engine3D_vector2f_mul(&collisionVector, &tmp, &tmp2);
+			memcpy(&collisionVector, &tmp2, sizeof(engine3D_vector2f_t));
+		}
 	}
 
 	result->x = collisionVector.x;
