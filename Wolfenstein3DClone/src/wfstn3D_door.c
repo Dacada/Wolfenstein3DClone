@@ -82,6 +82,9 @@ void wfstn3D_door_update(wfstn3D_door_t *const door) {
 			vectorLerp(&door->closePosition, &door->openPosition, lerpFactor, &newPos);
 			memcpy(&door->transform.translation, &newPos, sizeof(engine3D_vector3f_t));
 		}
+		else if (time > door->openTime && time < closingStartTime) {
+			memcpy(&door->transform.translation, &door->openPosition, sizeof(engine3D_vector3f_t));
+		}
 	}
 }
 

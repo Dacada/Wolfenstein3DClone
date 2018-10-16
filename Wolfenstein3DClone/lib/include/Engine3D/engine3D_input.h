@@ -11,7 +11,7 @@
 
 typedef enum engine3D_input_cursorMode {
 	ENGINE3D_CURSOR_ENABLED,  // Normal
-	ENGINE3D_CURSOR_HIDDEN,   // Invisible but usabled
+	ENGINE3D_CURSOR_HIDDEN,   // Invisible but usable
 	ENGINE3D_CURSOR_DISABLED, // Invisible and limitless movement (camera control mode)
 } engine3D_input_cursorMode;
 
@@ -40,7 +40,5 @@ void engine3D_input_setCursor(engine3D_input_cursorMode mode);
 void _engine3D_input_keyCallback(const GLFWwindow *const window, const int key, const int scancode, const int action, const int mods);
 
 void _engine3D_input_mouseButtonCallback(const GLFWwindow *const window, const int button, const int action, const int mods);
-
-void _engine3D_input_mousePositionCallback(const GLFWwindow *const window, const double xpos, const double ypos);
 
 #endif /* ENGINE3D_INPUT_H */

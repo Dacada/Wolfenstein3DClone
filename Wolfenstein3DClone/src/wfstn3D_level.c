@@ -1,6 +1,6 @@
 #include <wfstn3D_level.h>
+#include <wfstn3D_player.h>
 #include <wfstn3D_bitmap.h>
-
 #include <wfstn3D_door.h>
 
 #include <Engine3D/engine3D_mesh.h>
@@ -89,7 +89,7 @@ static void addDoor(wfstn3D_level_t *level, size_t i, size_t j) {
 		transform.translation.y = 0;
 		transform.translation.z = j + SPOT_WIDTH / 2;
 
-		memcpy(&openPosition, &transform.translation, sizeof(engine3D_transform_t));
+		memcpy(&openPosition, &transform.translation, sizeof(engine3D_vector3f_t));
 		openPosition.x -= OPEN_MOVEMENT_AMOUNT;
 	}
 
@@ -102,7 +102,7 @@ static void addDoor(wfstn3D_level_t *level, size_t i, size_t j) {
 		transform.rotation.y = 90;
 		transform.rotation.z = 0;
 
-		memcpy(&openPosition, &transform.translation, sizeof(engine3D_transform_t));
+		memcpy(&openPosition, &transform.translation, sizeof(engine3D_vector3f_t));
 		openPosition.z -= OPEN_MOVEMENT_AMOUNT;
 	}
 
@@ -248,7 +248,7 @@ void wfstn3D_level_load(const char *const levelname, const char *const texturena
 
 void wfstn3D_level_input(const wfstn3D_level_t *const level) {
 	if (engine3D_input_getKeyDown(GLFW_KEY_E)) {
-		for (int i = 0; i < level->doorsLen; i++) {
+		for (size_t i = 0; i < level->doorsLen; i++) {
 			wfstn3D_door_t *door = level->doors + i;
 			engine3D_vector3f_t tmp;
 			if (engine3D_vector3f_length(engine3D_vector3f_sub(&door->transform.translation, &level->player->camera->pos, &tmp)) < OPEN_DISTANCE) {
@@ -344,7 +344,7 @@ void wfstn3D_level_checkCollision(const engine3D_vector3f_t *const oldPos, const
 		}
 
 		// TODO: Orientation
-		for (int i = 0; i < level->doorsLen; i++) {
+		for (size_t i = 0; i < level->doorsLen; i++) {
 			engine3D_vector2f_t tmp, tmp2, doorPos2, doorSize = { WFSTN3D_DOOR_LENGTH, WFSTN3D_DOOR_WIDTH };
 			doorPos2.x = level->doors[i].transform.translation.x;
 			doorPos2.y = level->doors[i].transform.translation.z;
