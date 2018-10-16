@@ -345,7 +345,8 @@ void wfstn3D_level_checkCollision(const engine3D_vector3f_t *const oldPos, const
 
 		// TODO: Orientation
 		for (size_t i = 0; i < level->doorsLen; i++) {
-			engine3D_vector2f_t tmp, tmp2, doorPos2, doorSize = { WFSTN3D_DOOR_LENGTH, WFSTN3D_DOOR_WIDTH };
+			engine3D_vector2f_t tmp, tmp2, doorPos2, doorSize;
+			wfstn3D_door_getSize(level->doors + i, &doorSize);
 			doorPos2.x = level->doors[i].transform.translation.x;
 			doorPos2.y = level->doors[i].transform.translation.z;
 			rectCollide(&oldPos2, &newPos2, &objectSize, &doorPos2, &doorSize, &tmp);

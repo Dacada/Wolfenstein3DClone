@@ -38,4 +38,6 @@ void wfstn3D_door_cleanup(wfstn3D_door_t *const door);
 
 void wfstn3D_door_open(wfstn3D_door_t *const door);
 
+void wfstn3D_door_getSize(const wfstn3D_door_t *const door, engine3D_vector2f_t *const size);
+
 #endif /* WFSTN3D_DOOR_H */

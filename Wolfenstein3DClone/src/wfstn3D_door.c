@@ -82,8 +82,18 @@ void wfstn3D_door_update(wfstn3D_door_t *const door) {
 			vectorLerp(&door->closePosition, &door->openPosition, lerpFactor, &newPos);
 			memcpy(&door->transform.translation, &newPos, sizeof(engine3D_vector3f_t));
 		}
-		else if (time > door->openTime && time < closingStartTime) {
+		else if (time < door->closingStartTime) {
 			memcpy(&door->transform.translation, &door->openPosition, sizeof(engine3D_vector3f_t));
+		}
+		else if (time < door->closeTime) {
+			engine3D_vector3f_t newPos;
+			float lerpFactor = (time - door->closingStartTime) / WFSTN3D_DOOR_TIME_TO_OPEN;
+			vectorLerp(&door->openPosition, &door->closePosition, lerpFactor, &newPos);
+			memcpy(&door->transform.translation, &newPos, sizeof(engine3D_vector3f_t));
+		}
+		else {
+			memcpy(&door->transform.translation, &door->closePosition, sizeof(engine3D_vector3f_t));
+			door->isOpening = false;
 		}
 	}
 }
@@ -113,4 +123,15 @@ void wfstn3D_door_open(wfstn3D_door_t *const door) {
 	door->closeTime = door->closingStartTime + WFSTN3D_DOOR_TIME_TO_OPEN;
 
 	door->isOpening = true;
+}
+
+void wfstn3D_door_getSize(const wfstn3D_door_t *const door, engine3D_vector2f_t *const size) {
+	if (door->transform.rotation.y == 90) {
+		size->x = WFSTN3D_DOOR_WIDTH;
+		size->y = WFSTN3D_DOOR_LENGTH;
+	}
+	else {
+		size->x = WFSTN3D_DOOR_LENGTH;
+		size->y = WFSTN3D_DOOR_WIDTH;
+	}
 }
