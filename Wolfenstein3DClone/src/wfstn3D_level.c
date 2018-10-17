@@ -2,6 +2,7 @@
 #include <wfstn3D_player.h>
 #include <wfstn3D_bitmap.h>
 #include <wfstn3D_door.h>
+#include <wfstn3D_monster.h>
 
 #include <Engine3D/engine3D_mesh.h>
 #include <Engine3D/engine3D_texture.h>
@@ -21,6 +22,8 @@
 #define NUM_TEXTURES (NUM_TEX_EXP * NUM_TEX_EXP)
 #define OPEN_DISTANCE (1.0f)
 #define OPEN_MOVEMENT_AMOUNT (0.9f)
+
+wfstn3D_monster_t monster;
 
 static void getTexCoords(unsigned int p, float *XLower, float *XHigher, float *YLower, float *YHigher) {
 	/*
@@ -239,11 +242,12 @@ void wfstn3D_level_load(const char *const levelname, const char *const texturena
 	level->transform = engine3D_util_safeMalloc(sizeof(engine3D_transform_t));
 	engine3D_transform_reset(level->transform);
 
-	//level->door = engine3D_util_safeMalloc(sizeof(wfstn3D_door_t));
-	//engine3D_transform_t *tmp = engine3D_util_safeMalloc(sizeof(engine3D_transform_t));
-	//engine3D_transform_reset(tmp);
-	//tmp->translation.x = 16; tmp->translation.y = 0; tmp->translation.z = 28;
-	//wfstn3D_door_init(level->door, tmp, level->material, level);
+	engine3D_transform_t tmp;
+	engine3D_transform_reset(&tmp);
+	tmp.translation.x = 14;
+	tmp.translation.y = 0;
+	tmp.translation.z = 28;
+	wfstn3D_monster_init(&monster, &tmp, level);
 }
 
 void wfstn3D_level_input(const wfstn3D_level_t *const level) {
@@ -261,6 +265,7 @@ void wfstn3D_level_input(const wfstn3D_level_t *const level) {
 	for (size_t i = 0; i < level->doorsLen; i++) {
 		wfstn3D_door_input(level->doors + i);
 	}
+	wfstn3D_monster_input(&monster);
 }
 
 void wfstn3D_level_update(const wfstn3D_level_t *const level) {
@@ -268,6 +273,7 @@ void wfstn3D_level_update(const wfstn3D_level_t *const level) {
 	for (size_t i = 0; i < level->doorsLen; i++) {
 		wfstn3D_door_update(level->doors + i);
 	}
+	wfstn3D_monster_update(&monster);
 }
 
 void wfstn3D_level_render(const wfstn3D_level_t *const level) {
@@ -283,6 +289,7 @@ void wfstn3D_level_render(const wfstn3D_level_t *const level) {
 	for (size_t i = 0; i < level->doorsLen; i++) {
 		wfstn3D_door_render(level->doors + i);
 	}
+	wfstn3D_monster_render(&monster);
 }
 
 void wfstn3D_level_unload(wfstn3D_level_t *const level) {
@@ -291,6 +298,7 @@ void wfstn3D_level_unload(wfstn3D_level_t *const level) {
 		wfstn3D_door_cleanup(level->doors + i);
 	}
 	free(level->doors);
+	wfstn3D_monster_cleanup(&monster);
 
 	wfstn3D_bitmap_unload(level->bitmap);
 	free(level->bitmap);

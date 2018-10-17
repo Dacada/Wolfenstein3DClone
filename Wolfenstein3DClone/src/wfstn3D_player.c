@@ -91,6 +91,10 @@ void wfstn3D_player_input(wfstn3D_player_t *const player) {
 
 		engine3D_input_setMousePosition(&centerPosition);
 	}
+
+	if (engine3D_input_getKey(GLFW_KEY_ENTER)) {
+		engine3D_vector3f_fprintf(stderr, &player->camera->pos);
+	}
 }
 
 void wfstn3D_player_update(wfstn3D_player_t *const player) {

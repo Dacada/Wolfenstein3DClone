@@ -146,13 +146,40 @@
     <ClCompile Include="src\main.c" />
     <ClCompile Include="src\wfstn3D_door.c" />
     <ClCompile Include="src\wfstn3D_level.c" />
+    <ClCompile Include="src\wfstn3D_monster.c" />
     <ClCompile Include="src\wfstn3D_player.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\wfstn3D_bitmap.h" />
     <ClInclude Include="include\wfstn3D_door.h" />
     <ClInclude Include="include\wfstn3D_level.h" />
+    <ClInclude Include="include\wfstn3D_monster.h" />
     <ClInclude Include="include\wfstn3D_player.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\bitmaps\level1.png" />
+    <Image Include="res\textures\MEDIA0.png" />
+    <Image Include="res\textures\PISFA0.png" />
+    <Image Include="res\textures\PISGB0.png" />
+    <Image Include="res\textures\SSWVA1.png" />
+    <Image Include="res\textures\SSWVB1.png" />
+    <Image Include="res\textures\SSWVC1.png" />
+    <Image Include="res\textures\SSWVD1.png" />
+    <Image Include="res\textures\SSWVE0.png" />
+    <Image Include="res\textures\SSWVF0.png" />
+    <Image Include="res\textures\SSWVG0.png" />
+    <Image Include="res\textures\SSWVH0.png" />
+    <Image Include="res\textures\SSWVI0.png" />
+    <Image Include="res\textures\SSWVJ0.png" />
+    <Image Include="res\textures\SSWVK0.png" />
+    <Image Include="res\textures\SSWVL0.png" />
+    <Image Include="res\textures\SSWVM0.png" />
+    <Image Include="res\textures\test.png" />
+    <Image Include="res\textures\WolfCollection.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\shaders\basicFragment.fs" />
+    <None Include="res\shaders\basicVertex.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
