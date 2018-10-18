@@ -6,10 +6,19 @@
 
 #include "wfstn3D_level.h"
 
+typedef enum wfstn3D_monster_state_t {
+	WFSTN3D_MONSTER_STATE_IDLE,
+	WFSTN3D_MONSTER_STATE_CHASING,
+	WFSTN3D_MONSTER_STATE_ATTACKING,
+	WFSTN3D_MONSTER_STATE_DYING,
+	WFSTN3D_MONSTER_STATE_DEAD
+} wfstn3D_monster_state_t;
+
 typedef struct wfstn3D_monster_t {
 	engine3D_transform_t transform;
 	engine3D_material_t *material;
 	wfstn3D_level_t *level;
+	wfstn3D_monster_state_t state;
 } wfstn3D_monster_t;
 
 void wfstn3D_monster_init(wfstn3D_monster_t *const monster, const engine3D_transform_t *const transform, wfstn3D_level_t *const level);

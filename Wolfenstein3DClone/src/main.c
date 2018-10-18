@@ -21,7 +21,7 @@ static void init(void) {
 	wfstn3D_level_load("level1.png", "WolfCollection.png", &level);
 	level.player = &player;
 
-	engine3D_vector3f_t playerPos = { 14, 0.4375f, 28 };
+	engine3D_vector3f_t playerPos = { 14.5, 0.4375f, 27 };
 	wfstn3D_player_init(&playerPos, &level, &player);
 
 	engine3D_transform_camera = player.camera;

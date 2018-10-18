@@ -8,6 +8,8 @@
 
 #include <stdbool.h>
 
+#include <math.h>
+
 #define SCALE (0.7f)
 
 #define START (0.0f)
@@ -26,6 +28,8 @@ void wfstn3D_monster_init(wfstn3D_monster_t *const monster, const engine3D_trans
 	memcpy(&monster->transform, transform, sizeof(engine3D_transform_t));
 
 	monster->level = level;
+
+	monster->state = WFSTN3D_MONSTER_STATE_IDLE;
 
 	monster->material = engine3D_util_safeMalloc(sizeof(engine3D_material_t));
 	monster->material->color = engine3D_util_safeMalloc(sizeof(engine3D_vector3f_t));
@@ -56,7 +60,63 @@ void wfstn3D_monster_init(wfstn3D_monster_t *const monster, const engine3D_trans
 void wfstn3D_monster_input(wfstn3D_monster_t *const monster) {
 }
 
+void idleUpdate(wfstn3D_monster_t *const monster) {
+
+}
+
+void chasingUpdate(wfstn3D_monster_t *const monster) {
+
+}
+
+void attackingUpdate(wfstn3D_monster_t *const monster) {
+
+}
+
+void dyingUpdate(wfstn3D_monster_t *const monster) {
+
+}
+
+void deadUpdate(wfstn3D_monster_t *const monster) {
+
+}
+
+void alignWithGround(wfstn3D_monster_t *const monster) {
+	monster->transform.translation.y = 0;
+}
+
+void faceCamera(wfstn3D_monster_t *const monster) {
+	engine3D_vector3f_t direction;
+	engine3D_vector3f_sub(&monster->transform.translation, &engine3D_transform_camera->pos, &direction);
+	float angle = atanf(direction.z / direction.x) / 3.14159265359f * 180.0f + 90.0f;
+	if (direction.x > 0)
+		angle += 180.0f;
+	monster->transform.rotation.y = angle;
+}
+
 void wfstn3D_monster_update(wfstn3D_monster_t *const monster) {
+	alignWithGround(monster);
+	faceCamera(monster);
+
+	switch (monster->state) {
+	case WFSTN3D_MONSTER_STATE_IDLE:
+		idleUpdate(monster);
+		break;
+	case WFSTN3D_MONSTER_STATE_CHASING:
+		chasingUpdate(monster);
+		break;
+	case WFSTN3D_MONSTER_STATE_ATTACKING:
+		attackingUpdate(monster);
+		break;
+	case WFSTN3D_MONSTER_STATE_DYING:
+		dyingUpdate(monster);
+		break;
+	case WFSTN3D_MONSTER_STATE_DEAD:
+		deadUpdate(monster);
+		break;
+	default:
+		monster->state = WFSTN3D_MONSTER_STATE_IDLE;
+		break;
+	}
 }
 
 void wfstn3D_monster_render(wfstn3D_monster_t *const monster) {

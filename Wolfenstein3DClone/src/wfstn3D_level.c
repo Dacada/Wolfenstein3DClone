@@ -244,9 +244,9 @@ void wfstn3D_level_load(const char *const levelname, const char *const texturena
 
 	engine3D_transform_t tmp;
 	engine3D_transform_reset(&tmp);
-	tmp.translation.x = 14;
-	tmp.translation.y = 0;
-	tmp.translation.z = 28;
+	tmp.translation.x = 14.5;
+	tmp.translation.z = 25.5;
+	tmp.rotation.y = 180;
 	wfstn3D_monster_init(&monster, &tmp, level);
 }
 

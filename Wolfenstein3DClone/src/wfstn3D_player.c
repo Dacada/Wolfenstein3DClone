@@ -22,7 +22,7 @@ void wfstn3D_player_init(const engine3D_vector3f_t *const position, wfstn3D_leve
 	player->camera->pos.z = position->z;
 	player->camera->forward.x = 0;
 	player->camera->forward.y = 0;
-	player->camera->forward.z = 1;
+	player->camera->forward.z = -1;
 	player->camera->up.x = 0;
 	player->camera->up.y = 1;
 	player->camera->up.z = 0;
@@ -94,6 +94,8 @@ void wfstn3D_player_input(wfstn3D_player_t *const player) {
 
 	if (engine3D_input_getKey(GLFW_KEY_ENTER)) {
 		engine3D_vector3f_fprintf(stderr, &player->camera->pos);
+		engine3D_vector3f_fprintf(stderr, &player->camera->forward);
+		engine3D_vector3f_fprintf(stderr, &player->camera->up);
 	}
 }
 
