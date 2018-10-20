@@ -14,6 +14,7 @@
 #include <stdbool.h>
 
 #include <string.h>
+#include <math.h>
 
 #define SPOT_WIDTH (1.0f)
 #define SPOT_LENGTH (1.0f)
@@ -119,14 +120,27 @@ static void addSpecial(unsigned int blueValue, wfstn3D_level_t *level, size_t i,
 		addDoor(level, i, j);
 }
 
-static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, unsigned int **indices, size_t *indices_len, wfstn3D_level_t *level) {
+static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len,
+	                      unsigned int **indices, size_t *indices_len,
+	                      engine3D_vector2f_t **collisionPosStart, size_t *collisionPosStartLen,
+	                      engine3D_vector2f_t **collisionPosEnd, size_t *collisionPosEndLen,
+	                      wfstn3D_level_t *level) {
 	wfstn3D_bitmap_t *levelBitmap = level->bitmap;
+
 	size_t vertices_capacity = 1024;
 	size_t indices_capacity = 1024;
+	size_t collisionPosStart_capacity = 1024;
+	size_t collisionPosEnd_capacity = 1024;
+
 	engine3D_vertex_t *vertices_array = engine3D_util_safeMalloc(sizeof(engine3D_vertex_t) * vertices_capacity);
 	unsigned int *indices_array = engine3D_util_safeMalloc(sizeof(unsigned int) * indices_capacity);
+	engine3D_vector2f_t * collisionPosStart_array = engine3D_util_safeMalloc(sizeof(engine3D_vector2f_t) * collisionPosStart_capacity);
+	engine3D_vector2f_t * collisionPosEnd_array = engine3D_util_safeMalloc(sizeof(engine3D_vector2f_t) * collisionPosEnd_capacity);
+
 	size_t vertices_index = 0;
 	size_t indices_index = 0;
+	size_t collisionPosStart_index = 0;
+	size_t collisionPosEnd_index = 0;
 
 	for (size_t i = 0; i < levelBitmap->width; i++) {
 		for (size_t j = 0; j < levelBitmap->height; j++) {
@@ -147,6 +161,16 @@ static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, un
 					indices_array = engine3D_util_safeRealloc(indices_array, sizeof(unsigned int) * indices_capacity);
 				}
 
+				if (collisionPosStart_index + 4 >= collisionPosStart_capacity) {
+					collisionPosStart_capacity *= 2;
+					collisionPosStart_array = engine3D_util_safeRealloc(collisionPosStart_array, sizeof(engine3D_vector2f_t) * collisionPosStart_capacity);
+				}
+
+				if (collisionPosEnd_index + 4 >= collisionPosEnd_capacity) {
+					collisionPosEnd_capacity *= 2;
+					collisionPosEnd_array = engine3D_util_safeRealloc(collisionPosEnd_array, sizeof(engine3D_vector2f_t) * collisionPosEnd_capacity);
+				}
+
 				// FLOOR //
 				addFace(indices_array, &indices_index, vertices_index, true);
 				addVertex(vertices_array, vertices_index++, i * SPOT_WIDTH, 0, j * SPOT_LENGTH, XLower, YLower);
@@ -164,6 +188,8 @@ static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, un
 				// WALLS //
 				getTexCoords(((pixel & 0xFF0000) >> 16) / NUM_TEXTURES, &XLower, &XHigher, &YLower, &YHigher);
 				if ((wfstn3D_bitmap_getPixel(levelBitmap, i, j - 1) & 0xFFFFFF) == 0) {
+					collisionPosStart_array[collisionPosStart_index].x = i * SPOT_WIDTH; collisionPosStart_array[collisionPosStart_index++].y = j * SPOT_LENGTH;
+					collisionPosEnd_array[collisionPosEnd_index].x = (i + 1) * SPOT_WIDTH; collisionPosEnd_array[collisionPosEnd_index++].y = j * SPOT_LENGTH;
 					addFace(indices_array, &indices_index, vertices_index, false);
 					addVertex(vertices_array, vertices_index++, i * SPOT_WIDTH, 0, j * SPOT_LENGTH, XLower, YLower);
 					addVertex(vertices_array, vertices_index++, (i + 1) * SPOT_WIDTH, 0, j * SPOT_LENGTH, XHigher, YLower);
@@ -171,6 +197,8 @@ static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, un
 					addVertex(vertices_array, vertices_index++, i * SPOT_WIDTH, SPOT_HEIGHT, j * SPOT_LENGTH, XLower, YHigher);
 				}
 				if ((wfstn3D_bitmap_getPixel(levelBitmap, i, j + 1) & 0xFFFFFF) == 0) {
+					collisionPosStart_array[collisionPosStart_index].x = i * SPOT_WIDTH; collisionPosStart_array[collisionPosStart_index++].y = (j + 1) * SPOT_LENGTH;
+					collisionPosEnd_array[collisionPosEnd_index].x = (i + 1) * SPOT_WIDTH; collisionPosEnd_array[collisionPosEnd_index++].y = (j + 1) * SPOT_LENGTH;
 					addFace(indices_array, &indices_index, vertices_index, true);
 					addVertex(vertices_array, vertices_index++, i * SPOT_WIDTH, 0, (j + 1) * SPOT_LENGTH, XLower, YLower);
 					addVertex(vertices_array, vertices_index++, (i + 1) * SPOT_WIDTH, 0, (j + 1) * SPOT_LENGTH, XHigher, YLower);
@@ -178,6 +206,8 @@ static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, un
 					addVertex(vertices_array, vertices_index++, i * SPOT_WIDTH, SPOT_HEIGHT, (j + 1) * SPOT_LENGTH, XLower, YHigher);
 				}
 				if ((wfstn3D_bitmap_getPixel(levelBitmap, i - 1, j) & 0xFFFFFF) == 0) {
+					collisionPosStart_array[collisionPosStart_index].x = i * SPOT_WIDTH; collisionPosStart_array[collisionPosStart_index++].y = j * SPOT_LENGTH;
+					collisionPosEnd_array[collisionPosEnd_index].x = i * SPOT_WIDTH; collisionPosEnd_array[collisionPosEnd_index++].y = (j + 1) * SPOT_LENGTH;
 					addFace(indices_array, &indices_index, vertices_index, true);
 					addVertex(vertices_array, vertices_index++, i * SPOT_WIDTH, 0, j * SPOT_LENGTH, XLower, YLower);
 					addVertex(vertices_array, vertices_index++, i * SPOT_WIDTH, 0, (j + 1) * SPOT_LENGTH, XHigher, YLower);
@@ -185,6 +215,8 @@ static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, un
 					addVertex(vertices_array, vertices_index++, i * SPOT_WIDTH, SPOT_HEIGHT, j * SPOT_LENGTH, XLower, YHigher);
 				}
 				if ((wfstn3D_bitmap_getPixel(levelBitmap, i + 1, j) & 0xFFFFFF) == 0) {
+					collisionPosStart_array[collisionPosStart_index].x = (i + 1) * SPOT_WIDTH; collisionPosStart_array[collisionPosStart_index++].y = j * SPOT_LENGTH;
+					collisionPosEnd_array[collisionPosEnd_index].x = (i + 1) * SPOT_WIDTH; collisionPosEnd_array[collisionPosEnd_index++].y = (j + 1) * SPOT_LENGTH;
 					addFace(indices_array, &indices_index, vertices_index, false);
 					addVertex(vertices_array, vertices_index++, (i + 1) * SPOT_WIDTH, 0, j * SPOT_LENGTH, XLower, YLower);
 					addVertex(vertices_array, vertices_index++, (i + 1) * SPOT_WIDTH, 0, (j + 1) * SPOT_LENGTH, XHigher, YLower);
@@ -197,11 +229,18 @@ static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len, un
 
 	vertices_array = engine3D_util_safeRealloc(vertices_array, sizeof(engine3D_vertex_t) * vertices_index);
 	indices_array = engine3D_util_safeRealloc(indices_array, sizeof(unsigned int) * indices_index);
+	collisionPosStart_array = engine3D_util_safeRealloc(collisionPosStart_array, sizeof(engine3D_vector2f_t) * collisionPosStart_index);
+	collisionPosEnd_array = engine3D_util_safeRealloc(collisionPosEnd_array, sizeof(engine3D_vector2f_t) * collisionPosEnd_index);
 
 	*vertices = vertices_array;
 	*indices = indices_array;
+	*collisionPosStart = collisionPosStart_array;
+	*collisionPosEnd = collisionPosEnd_array;
+
 	*vertices_len = vertices_index;
 	*indices_len = indices_index;
+	*collisionPosStartLen = collisionPosStart_index;
+	*collisionPosEndLen = collisionPosEnd_index;
 }
 
 void wfstn3D_level_load(const char *const levelname, const char *const texturename, wfstn3D_level_t *const level) {
@@ -231,11 +270,9 @@ void wfstn3D_level_load(const char *const levelname, const char *const texturena
 	size_t vertices_len, indices_len;
 	engine3D_vertex_t *vertices;
 	unsigned int *indices;
-	generateLevel(&vertices, &vertices_len, &indices, &indices_len, level);
+	generateLevel(&vertices, &vertices_len, &indices, &indices_len, &level->collisionPosStart, &level->collisionPosStartLen, &level->collisionPosEnd, &level->collisionPosEndLen, level);
 
 	engine3D_mesh_addVertices(level->mesh, vertices, vertices_len, indices, indices_len, true);
-	//engine3D_mesh_addVertices(&mesh, vertices, 4, indices, 6, true);
-
 	free(vertices);
 	free(indices);
 
@@ -252,13 +289,7 @@ void wfstn3D_level_load(const char *const levelname, const char *const texturena
 
 void wfstn3D_level_input(const wfstn3D_level_t *const level) {
 	if (engine3D_input_getKeyDown(GLFW_KEY_E)) {
-		for (size_t i = 0; i < level->doorsLen; i++) {
-			wfstn3D_door_t *door = level->doors + i;
-			engine3D_vector3f_t tmp;
-			if (engine3D_vector3f_length(engine3D_vector3f_sub(&door->transform.translation, &level->player->camera->pos, &tmp)) < OPEN_DISTANCE) {
-				wfstn3D_door_open(door);
-			}
-		}
+		wfstn3D_level_openDoorsAt(&level->player->camera->pos, level);
 	}
 
 	wfstn3D_player_input(level->player);
@@ -366,4 +397,55 @@ void wfstn3D_level_checkCollision(const engine3D_vector3f_t *const oldPos, const
 	result->x = collisionVector.x;
 	result->y = 0;
 	result->z = collisionVector.y;
+}
+
+void wfstn3D_level_openDoorsAt(const engine3D_vector3f_t *const position, const wfstn3D_level_t *const level) {
+	for (size_t i = 0; i < level->doorsLen; i++) {
+		wfstn3D_door_t *door = level->doors + i;
+		engine3D_vector3f_t tmp;
+		if (engine3D_vector3f_length(engine3D_vector3f_sub(&door->transform.translation, position, &tmp)) < OPEN_DISTANCE) {
+			wfstn3D_door_open(door);
+		}
+	}
+}
+
+static inline float vector2f_crossProduct(const engine3D_vector2f_t a, const engine3D_vector2f_t b) {
+	return a.x * b.y - a.y * b.x;
+}
+
+static bool lineIntersect(const engine3D_vector2f_t *const lineStart1, const engine3D_vector2f_t *const lineEnd1, const engine3D_vector2f_t *const lineStart2, const engine3D_vector2f_t *const lineEnd2, engine3D_vector2f_t *const result) {
+	engine3D_vector2f_t line1, line2, distanceBetweenLineStarts, tmp;
+
+	engine3D_vector2f_sub(lineEnd1, lineStart1, &line1);
+	engine3D_vector2f_sub(lineEnd2, lineStart2, &line2);
+
+	float cross = vector2f_crossProduct(line1, line2);
+	if (cross == 0)
+		return false;
+
+	engine3D_vector2f_sub(lineStart2, lineStart1, &distanceBetweenLineStarts);
+
+	float a = vector2f_crossProduct(distanceBetweenLineStarts, line2) / cross;
+	float b = vector2f_crossProduct(distanceBetweenLineStarts, line1) / cross;
+
+	if (0.0f < a && a < 1.0f && 0.0f < b && b < 1.0f) {
+		engine3D_vector2f_add(lineStart1, engine3D_vector2f_mulf(&line1, a, &tmp), result);
+		return true;
+	}
+
+	return false;
+}
+
+void wfstn3D_level_checkIntersections(const wfstn3D_level_t *const level, const engine3D_vector2f_t *const lineStart, const engine3D_vector2f_t *const lineEnd, engine3D_vector2f_t *const nearestIntersection) {
+	float minDiffference = INFINITY;
+	for (size_t i = 0; i < level->collisionPosStartLen; i++) {
+		engine3D_vector2f_t collisionVector, tmp;
+		float diff;
+		if (lineIntersect(lineStart, lineEnd, level->collisionPosStart + i, level->collisionPosEnd + i, &collisionVector) &&
+			minDiffference > (diff = engine3D_vector2f_length(engine3D_vector2f_sub(&collisionVector, lineStart, &tmp))))
+		{
+			minDiffference = diff;
+			memcpy(nearestIntersection, &collisionVector, sizeof(engine3D_vector2f_t));
+		}
+	}
 }

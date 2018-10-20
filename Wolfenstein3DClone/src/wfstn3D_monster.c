@@ -1,3 +1,4 @@
+#include <Engine3D/engine3D_time.h>
 #include <Engine3D/engine3D_util.h>
 #include <Engine3D/engine3D_mesh.h>
 #include <Engine3D/engine3D_basicShader.h>
@@ -5,8 +6,10 @@
 #include <Engine3D/engine3D_material.h>
 
 #include <wfstn3D_monster.h>
+#include <wfstn3D_level.h>
 
 #include <stdbool.h>
+#include <stdio.h>
 
 #include <math.h>
 
@@ -21,6 +24,13 @@
 #define TEX_MIN_Y (0.0f)
 #define TEX_MAX_Y (-1.0f)
 
+#define MOVE_SPEED (1.0f)
+#define MOVE_STOP_DISTANCE (1.5f)
+#define MONSTER_WIDTH (0.1f)
+#define MONSTER_LENGTH (0.1f)
+
+#define SHOOT_DISTANCE (1000.0f)
+
 static engine3D_mesh_t mesh;
 static bool meshIsLoaded = false;
 
@@ -29,7 +39,7 @@ void wfstn3D_monster_init(wfstn3D_monster_t *const monster, const engine3D_trans
 
 	monster->level = level;
 
-	monster->state = WFSTN3D_MONSTER_STATE_IDLE;
+	monster->state = WFSTN3D_MONSTER_STATE_ATTACKING;
 
 	monster->material = engine3D_util_safeMalloc(sizeof(engine3D_material_t));
 	monster->material->color = engine3D_util_safeMalloc(sizeof(engine3D_vector3f_t));
@@ -60,23 +70,53 @@ void wfstn3D_monster_init(wfstn3D_monster_t *const monster, const engine3D_trans
 void wfstn3D_monster_input(wfstn3D_monster_t *const monster) {
 }
 
-void idleUpdate(wfstn3D_monster_t *const monster) {
+void idleUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *const orientation, float distance) {
 
 }
 
-void chasingUpdate(wfstn3D_monster_t *const monster) {
+void chasingUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *const orientation, float distance) {
+	engine3D_vector3f_t tmp, newPos, movementVector, collisionVector;
+	if (distance > MOVE_STOP_DISTANCE) {
+		float movAmnt = -MOVE_SPEED * (float)engine3D_time_getDelta();
+
+		engine3D_vector3f_add(&monster->transform.translation, engine3D_vector3f_mulf(orientation, movAmnt, &tmp), &newPos);
+		wfstn3D_level_checkCollision(&monster->transform.translation, &newPos, MONSTER_WIDTH, MONSTER_LENGTH, &collisionVector, monster->level);
+		engine3D_vector3f_mul(&collisionVector, orientation, &movementVector);
+
+		if (engine3D_vector3f_length(&movementVector) > 0) {
+			engine3D_vector3f_add(&monster->transform.translation, engine3D_vector3f_mulf(&movementVector, movAmnt, &tmp), &monster->transform.translation);
+		}
+
+		if (engine3D_vector3f_length(engine3D_vector3f_sub(&movementVector, orientation, &tmp)) != 0) {
+			wfstn3D_level_openDoorsAt(&monster->transform.translation, monster->level);
+		}
+	}
+}
+
+void attackingUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *const orientation, float distance) {
+	engine3D_vector2f_t lineStart, castDirection, lineEnd, collisionVector = { 0,0 }, tmp;
+
+	lineStart.x = monster->transform.translation.x;
+	lineStart.y = monster->transform.translation.z;
+	castDirection.x = orientation->x;
+	castDirection.y = orientation->z;
+	engine3D_vector2f_add(&lineStart, engine3D_vector2f_mulf(&castDirection, SHOOT_DISTANCE, &tmp), &lineEnd);
+
+	wfstn3D_level_checkIntersections(monster->level, &lineStart, &lineEnd, &collisionVector);
+
+	if (collisionVector.x != 0 || collisionVector.y != 0)
+		fprintf(stderr, "Something got hit\n");
+	else
+		fprintf(stderr, "NANI?!\n");
+
+	monster->state = WFSTN3D_MONSTER_STATE_CHASING;
+}
+
+void dyingUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *const orientation, float distance) {
 
 }
 
-void attackingUpdate(wfstn3D_monster_t *const monster) {
-
-}
-
-void dyingUpdate(wfstn3D_monster_t *const monster) {
-
-}
-
-void deadUpdate(wfstn3D_monster_t *const monster) {
+void deadUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *const orientation, float distance) {
 
 }
 
@@ -84,34 +124,38 @@ void alignWithGround(wfstn3D_monster_t *const monster) {
 	monster->transform.translation.y = 0;
 }
 
-void faceCamera(wfstn3D_monster_t *const monster) {
-	engine3D_vector3f_t direction;
-	engine3D_vector3f_sub(&monster->transform.translation, &engine3D_transform_camera->pos, &direction);
-	float angle = atanf(direction.z / direction.x) / 3.14159265359f * 180.0f + 90.0f;
-	if (direction.x > 0)
+void faceCamera(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *const direction) {
+	float angle = atanf(direction->z / direction->x) / 3.14159265359f * 180.0f + 90.0f;
+	if (direction->x > 0)
 		angle += 180.0f;
 	monster->transform.rotation.y = angle;
 }
 
 void wfstn3D_monster_update(wfstn3D_monster_t *const monster) {
+	float distance;
+	engine3D_vector3f_t directionToCamera, orientation;
+	engine3D_vector3f_sub(&monster->transform.translation, &engine3D_transform_camera->pos, &directionToCamera);
+	distance = engine3D_vector3f_length(&directionToCamera);
+	engine3D_vector3f_divf(&directionToCamera, distance, &orientation);
+
 	alignWithGround(monster);
-	faceCamera(monster);
+	faceCamera(monster, &orientation);
 
 	switch (monster->state) {
 	case WFSTN3D_MONSTER_STATE_IDLE:
-		idleUpdate(monster);
+		idleUpdate(monster, &orientation, distance);
 		break;
 	case WFSTN3D_MONSTER_STATE_CHASING:
-		chasingUpdate(monster);
+		chasingUpdate(monster, &orientation, distance);
 		break;
 	case WFSTN3D_MONSTER_STATE_ATTACKING:
-		attackingUpdate(monster);
+		attackingUpdate(monster, &orientation, distance);
 		break;
 	case WFSTN3D_MONSTER_STATE_DYING:
-		dyingUpdate(monster);
+		dyingUpdate(monster, &orientation, distance);
 		break;
 	case WFSTN3D_MONSTER_STATE_DEAD:
-		deadUpdate(monster);
+		deadUpdate(monster, &orientation, distance);
 		break;
 	default:
 		monster->state = WFSTN3D_MONSTER_STATE_IDLE;
