@@ -11,7 +11,6 @@
 
 #define MOUSE_SENSITIVITY (1000.0f)
 #define MOVE_SPEED (10.0f)
-#define PLAYER_SIZE (0.3f)
 
 void wfstn3D_player_init(const engine3D_vector3f_t *const position, wfstn3D_level_t *const level, wfstn3D_player_t *const player) {
 	player->camera = engine3D_util_safeMalloc(sizeof(engine3D_camera_t));
@@ -111,7 +110,7 @@ void wfstn3D_player_update(wfstn3D_player_t *const player) {
 	engine3D_vector3f_t newPos, tmp, collisionVector;
 	engine3D_vector3f_mulf(&player->movementVector, movAmt, &tmp);
 	engine3D_vector3f_add(&player->camera->pos, &tmp, &newPos);
-	wfstn3D_level_checkCollision(&player->camera->pos, &newPos, PLAYER_SIZE, PLAYER_SIZE, &collisionVector, player->level);
+	wfstn3D_level_checkCollision(&player->camera->pos, &newPos, WFSTN3D_PLAYER_SIZE, WFSTN3D_PLAYER_SIZE, &collisionVector, player->level);
 	engine3D_vector3f_mul(&player->movementVector, &collisionVector, &tmp);
 	memcpy(&player->movementVector, &tmp, sizeof(engine3D_vector3f_t));
 

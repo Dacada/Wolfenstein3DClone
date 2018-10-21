@@ -6,6 +6,7 @@
 #include <Engine3D/engine3D_material.h>
 
 #include <wfstn3D_monster.h>
+#include <wfstn3D_player.h>
 #include <wfstn3D_level.h>
 
 #include <stdbool.h>
@@ -30,6 +31,7 @@
 #define MONSTER_LENGTH (0.1f)
 
 #define SHOOT_DISTANCE (1000.0f)
+#define SHOOT_ANGLE (10.0f)
 
 static engine3D_mesh_t mesh;
 static bool meshIsLoaded = false;
@@ -94,22 +96,30 @@ void chasingUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *
 }
 
 void attackingUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *const orientation, float distance) {
-	engine3D_vector2f_t lineStart, castDirection, lineEnd, collisionVector = { 0,0 }, tmp;
+	engine3D_vector2f_t lineStart, castDirection, rotatedCastDirection, lineEnd, collisionVector, playerIntersectVector, tmp;
 
 	lineStart.x = monster->transform.translation.x;
 	lineStart.y = monster->transform.translation.z;
-	castDirection.x = orientation->x;
-	castDirection.y = orientation->z;
-	engine3D_vector2f_add(&lineStart, engine3D_vector2f_mulf(&castDirection, SHOOT_DISTANCE, &tmp), &lineEnd);
+	castDirection.x = -orientation->x;
+	castDirection.y = -orientation->z;
+	engine3D_vector2f_rotateDeg(&castDirection, (((float)rand())/((float)RAND_MAX)-0.5f)*SHOOT_ANGLE, &rotatedCastDirection);
 
-	wfstn3D_level_checkIntersections(monster->level, &lineStart, &lineEnd, &collisionVector);
+	engine3D_vector2f_add(&lineStart, engine3D_vector2f_mulf(&rotatedCastDirection, SHOOT_DISTANCE, &tmp), &lineEnd);
 
-	if (collisionVector.x != 0 || collisionVector.y != 0)
+	bool i1 = wfstn3D_level_checkIntersections(monster->level, &lineStart, &lineEnd, &collisionVector);
+	engine3D_vector2f_t size = { WFSTN3D_PLAYER_SIZE ,WFSTN3D_PLAYER_SIZE }, pos = { engine3D_transform_camera->pos.x,engine3D_transform_camera->pos.z };
+	bool i2 = wfstn3D_level_lineIntersectRect(monster->level, &lineStart, &lineEnd, &pos, &size, &playerIntersectVector);
+
+	if (i2 && (!i1 || engine3D_vector2f_length(engine3D_vector2f_sub(&playerIntersectVector, &lineStart, &tmp)) < engine3D_vector2f_length(engine3D_vector2f_sub(&collisionVector, &lineStart, &tmp)))) {
+		fprintf(stderr, "OOF!");
+	}
+
+	if (i1)
 		fprintf(stderr, "Something got hit\n");
 	else
 		fprintf(stderr, "NANI?!\n");
 
-	monster->state = WFSTN3D_MONSTER_STATE_CHASING;
+	//monster->state = WFSTN3D_MONSTER_STATE_CHASING;
 }
 
 void dyingUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *const orientation, float distance) {

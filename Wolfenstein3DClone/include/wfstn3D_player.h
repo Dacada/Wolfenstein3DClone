@@ -6,6 +6,8 @@
 #include <Engine3D/engine3D_vector.h>
 #include <Engine3D/engine3D_camera.h>
 
+#define WFSTN3D_PLAYER_SIZE (0.3f)
+
 typedef struct wfstn3D_player_t {
 	engine3D_camera_t *camera;
 	wfstn3D_level_t *level;

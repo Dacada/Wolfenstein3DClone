@@ -12,10 +12,13 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <time.h>
+
 wfstn3D_level_t level;
 wfstn3D_player_t player; // TODO: Finish moving player spawning to the level
 
 static void init(void) {
+	srand(time(NULL));
 	engine3D_resourceLoader_setResPath("../Wolfenstein3DClone/res/");
 
 	wfstn3D_level_load("level1.png", "WolfCollection.png", &level);

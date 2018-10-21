@@ -436,8 +436,9 @@ static bool lineIntersect(const engine3D_vector2f_t *const lineStart1, const eng
 	return false;
 }
 
-void wfstn3D_level_checkIntersections(const wfstn3D_level_t *const level, const engine3D_vector2f_t *const lineStart, const engine3D_vector2f_t *const lineEnd, engine3D_vector2f_t *const nearestIntersection) {
+bool wfstn3D_level_checkIntersections(const wfstn3D_level_t *const level, const engine3D_vector2f_t *const lineStart, const engine3D_vector2f_t *const lineEnd, engine3D_vector2f_t *const nearestIntersection) {
 	float minDiffference = INFINITY;
+	bool ret = false;
 	for (size_t i = 0; i < level->collisionPosStartLen; i++) {
 		engine3D_vector2f_t collisionVector, tmp;
 		float diff;
@@ -446,6 +447,70 @@ void wfstn3D_level_checkIntersections(const wfstn3D_level_t *const level, const 
 		{
 			minDiffference = diff;
 			memcpy(nearestIntersection, &collisionVector, sizeof(engine3D_vector2f_t));
+			ret = true;
 		}
 	}
+	return ret;
+}
+
+engine3D_vector2f_t *nearestVector2f(const engine3D_vector2f_t *const a, const engine3D_vector2f_t *const b, const engine3D_vector2f_t *const position) {
+	engine3D_vector2f_t tmp;
+	if (engine3D_vector2f_length(engine3D_vector2f_sub(a, position, &tmp)) > engine3D_vector2f_length(engine3D_vector2f_sub(b, position, &tmp))) {
+		return b;
+	}
+	else {
+		return a;
+	}
+}
+
+bool wfstn3D_level_lineIntersectRect(const wfstn3D_level_t *const level, const engine3D_vector2f_t *const lineStart, const engine3D_vector2f_t *const lineEnd, const engine3D_vector2f_t *const pos, const engine3D_vector2f_t *const size, engine3D_vector2f_t *const result) {
+	engine3D_vector2f_t collisionVector, posAlt, tmp;
+	bool i, res = false;
+	
+	posAlt.x = pos->x + size->x;
+	posAlt.y = pos->y;
+	if (lineIntersect(lineStart, lineEnd, pos, &posAlt, &result)) {
+		res = true;
+	}
+
+	posAlt.x = pos->x;
+	posAlt.y = pos->y + size->y;
+	i = lineIntersect(lineStart, lineEnd, pos, &posAlt, &collisionVector);
+	if (res && i) {
+		engine3D_vector2f_t *nearest = nearestVector2f(result, &collisionVector, lineStart);
+		if (nearest != result)
+			memcpy(result, &collisionVector, sizeof(engine3D_vector2f_t));
+	}
+	else if (i) {
+		memcpy(result, &collisionVector, sizeof(engine3D_vector2f_t));
+		res = true;
+	}
+
+	posAlt.x = pos->x;
+	posAlt.y = pos->y + size->y;
+	i = lineIntersect(lineStart, lineEnd, &posAlt, engine3D_vector2f_add(pos, size, &tmp), &collisionVector);
+	if (res && i) {
+		engine3D_vector2f_t *nearest = nearestVector2f(result, &collisionVector, lineStart);
+		if (nearest != result)
+			memcpy(result, &collisionVector, sizeof(engine3D_vector2f_t));
+	}
+	else if (i) {
+		memcpy(result, &collisionVector, sizeof(engine3D_vector2f_t));
+		res = true;
+	}
+
+	posAlt.x = pos->x + size->x;
+	posAlt.y = pos->y;
+	i = lineIntersect(lineStart, lineEnd, &posAlt, engine3D_vector2f_add(pos, size, &tmp), &collisionVector);
+	if (res && i) {
+		engine3D_vector2f_t *nearest = nearestVector2f(result, &collisionVector, lineStart);
+		if (nearest != result)
+			memcpy(result, &collisionVector, sizeof(engine3D_vector2f_t));
+	}
+	else if (i) {
+		memcpy(result, &collisionVector, sizeof(engine3D_vector2f_t));
+		res = true;
+	}
+
+	return res;
 }
