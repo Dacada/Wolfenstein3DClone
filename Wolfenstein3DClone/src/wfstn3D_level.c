@@ -382,7 +382,6 @@ void wfstn3D_level_checkCollision(const engine3D_vector3f_t *const oldPos, const
 			}
 		}
 
-		// TODO: Orientation
 		for (size_t i = 0; i < level->doorsLen; i++) {
 			engine3D_vector2f_t tmp, tmp2, doorPos2, doorSize;
 			wfstn3D_door_getSize(level->doors + i, &doorSize);
@@ -450,10 +449,25 @@ bool wfstn3D_level_checkIntersections(const wfstn3D_level_t *const level, const 
 			ret = true;
 		}
 	}
+	for (size_t i = 0; i < level->doorsLen; i++) {
+		engine3D_vector2f_t collisionVector, tmp, doorPos2, doorSize;
+		wfstn3D_door_getSize(level->doors + i, &doorSize);
+		doorPos2.x = level->doors[i].transform.translation.x;
+		doorPos2.y = level->doors[i].transform.translation.z;
+
+		float diff;
+		if (lineIntersect(lineStart, lineEnd, &doorPos2, &doorSize, &collisionVector) &&
+			minDiffference > (diff = engine3D_vector2f_length(engine3D_vector2f_sub(&collisionVector, lineStart, &tmp))))
+		{
+			minDiffference = diff;
+			memcpy(nearestIntersection, &collisionVector, sizeof(engine3D_vector2f_t));
+			ret = true;
+		}
+	}
 	return ret;
 }
 
-engine3D_vector2f_t *nearestVector2f(const engine3D_vector2f_t *const a, const engine3D_vector2f_t *const b, const engine3D_vector2f_t *const position) {
+engine3D_vector2f_t *nearestVector2f(engine3D_vector2f_t *const a, engine3D_vector2f_t *const b, const engine3D_vector2f_t *const position) {
 	engine3D_vector2f_t tmp;
 	if (engine3D_vector2f_length(engine3D_vector2f_sub(a, position, &tmp)) > engine3D_vector2f_length(engine3D_vector2f_sub(b, position, &tmp))) {
 		return b;
@@ -464,12 +478,13 @@ engine3D_vector2f_t *nearestVector2f(const engine3D_vector2f_t *const a, const e
 }
 
 bool wfstn3D_level_lineIntersectRect(const wfstn3D_level_t *const level, const engine3D_vector2f_t *const lineStart, const engine3D_vector2f_t *const lineEnd, const engine3D_vector2f_t *const pos, const engine3D_vector2f_t *const size, engine3D_vector2f_t *const result) {
+	(void)level;
 	engine3D_vector2f_t collisionVector, posAlt, tmp;
 	bool i, res = false;
-	
+
 	posAlt.x = pos->x + size->x;
 	posAlt.y = pos->y;
-	if (lineIntersect(lineStart, lineEnd, pos, &posAlt, &result)) {
+	if (lineIntersect(lineStart, lineEnd, pos, &posAlt, result)) {
 		res = true;
 	}
 

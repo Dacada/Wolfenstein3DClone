@@ -4,6 +4,7 @@
 #include <Engine3D/engine3D_basicShader.h>
 #include <Engine3D/engine3D_texture.h>
 #include <Engine3D/engine3D_material.h>
+#include <Engine3D/engine3D_resourceLoader.h>
 
 #include <wfstn3D_monster.h>
 #include <wfstn3D_player.h>
@@ -13,6 +14,7 @@
 #include <stdio.h>
 
 #include <math.h>
+#include <string.h>
 
 #define SCALE (0.7f)
 
@@ -70,16 +72,19 @@ void wfstn3D_monster_init(wfstn3D_monster_t *const monster, const engine3D_trans
 }
 
 void wfstn3D_monster_input(wfstn3D_monster_t *const monster) {
+	(void)monster;
 }
 
 void idleUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *const orientation, float distance) {
-
+	(void)monster;
+	(void)orientation;
+	(void)distance;
 }
 
 void chasingUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *const orientation, float distance) {
 	engine3D_vector3f_t tmp, newPos, movementVector, collisionVector;
 	if (distance > MOVE_STOP_DISTANCE) {
-		float movAmnt = -MOVE_SPEED * (float)engine3D_time_getDelta();
+		float movAmnt = MOVE_SPEED * (float)engine3D_time_getDelta();
 
 		engine3D_vector3f_add(&monster->transform.translation, engine3D_vector3f_mulf(orientation, movAmnt, &tmp), &newPos);
 		wfstn3D_level_checkCollision(&monster->transform.translation, &newPos, MONSTER_WIDTH, MONSTER_LENGTH, &collisionVector, monster->level);
@@ -96,12 +101,13 @@ void chasingUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *
 }
 
 void attackingUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *const orientation, float distance) {
+	(void)distance;
 	engine3D_vector2f_t lineStart, castDirection, rotatedCastDirection, lineEnd, collisionVector, playerIntersectVector, tmp;
 
 	lineStart.x = monster->transform.translation.x;
 	lineStart.y = monster->transform.translation.z;
-	castDirection.x = -orientation->x;
-	castDirection.y = -orientation->z;
+	castDirection.x = orientation->x;
+	castDirection.y = orientation->z;
 	engine3D_vector2f_rotateDeg(&castDirection, (((float)rand())/((float)RAND_MAX)-0.5f)*SHOOT_ANGLE, &rotatedCastDirection);
 
 	engine3D_vector2f_add(&lineStart, engine3D_vector2f_mulf(&rotatedCastDirection, SHOOT_DISTANCE, &tmp), &lineEnd);
@@ -111,7 +117,8 @@ void attackingUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t
 	bool i2 = wfstn3D_level_lineIntersectRect(monster->level, &lineStart, &lineEnd, &pos, &size, &playerIntersectVector);
 
 	if (i2 && (!i1 || engine3D_vector2f_length(engine3D_vector2f_sub(&playerIntersectVector, &lineStart, &tmp)) < engine3D_vector2f_length(engine3D_vector2f_sub(&collisionVector, &lineStart, &tmp)))) {
-		fprintf(stderr, "OOF!");
+		fprintf(stderr, "OOF!\n");
+		monster->state = WFSTN3D_MONSTER_STATE_CHASING;
 	}
 
 	if (i1)
@@ -119,15 +126,19 @@ void attackingUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t
 	else
 		fprintf(stderr, "NANI?!\n");
 
-	//monster->state = WFSTN3D_MONSTER_STATE_CHASING;
+
 }
 
 void dyingUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *const orientation, float distance) {
-
+	(void)monster;
+	(void)orientation;
+	(void)distance;
 }
 
 void deadUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *const orientation, float distance) {
-
+	(void)monster;
+	(void)orientation;
+	(void)distance;
 }
 
 void alignWithGround(wfstn3D_monster_t *const monster) {
@@ -136,7 +147,7 @@ void alignWithGround(wfstn3D_monster_t *const monster) {
 
 void faceCamera(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *const direction) {
 	float angle = atanf(direction->z / direction->x) / 3.14159265359f * 180.0f + 90.0f;
-	if (direction->x > 0)
+	if (direction->x < 0)
 		angle += 180.0f;
 	monster->transform.rotation.y = angle;
 }
@@ -144,7 +155,7 @@ void faceCamera(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *con
 void wfstn3D_monster_update(wfstn3D_monster_t *const monster) {
 	float distance;
 	engine3D_vector3f_t directionToCamera, orientation;
-	engine3D_vector3f_sub(&monster->transform.translation, &engine3D_transform_camera->pos, &directionToCamera);
+	engine3D_vector3f_sub(&engine3D_transform_camera->pos, &monster->transform.translation, &directionToCamera);
 	distance = engine3D_vector3f_length(&directionToCamera);
 	engine3D_vector3f_divf(&directionToCamera, distance, &orientation);
 
