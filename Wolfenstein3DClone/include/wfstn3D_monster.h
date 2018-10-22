@@ -6,6 +6,8 @@
 
 #include "wfstn3D_level.h"
 
+#include <stdbool.h>
+
 typedef enum wfstn3D_monster_state_t {
 	WFSTN3D_MONSTER_STATE_IDLE,
 	WFSTN3D_MONSTER_STATE_CHASING,
@@ -19,6 +21,9 @@ typedef struct wfstn3D_monster_t {
 	engine3D_material_t *material;
 	wfstn3D_level_t *level;
 	wfstn3D_monster_state_t state;
+	bool canLook;
+	bool canAttack;
+	int health;
 } wfstn3D_monster_t;
 
 void wfstn3D_monster_init(wfstn3D_monster_t *const monster, const engine3D_transform_t *const transform, wfstn3D_level_t *const level);
@@ -30,5 +35,7 @@ void wfstn3D_monster_update(wfstn3D_monster_t *const monster);
 void wfstn3D_monster_render(wfstn3D_monster_t *const monster);
 			 
 void wfstn3D_monster_cleanup(wfstn3D_monster_t *const monster);
+
+void wfstn3D_monster_damage(wfstn3D_monster_t *const monster, int amount);
 
 #endif /* WFSTN3D_MONSTER_H */

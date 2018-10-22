@@ -282,7 +282,8 @@ void wfstn3D_level_load(const char *const levelname, const char *const texturena
 	engine3D_transform_t tmp;
 	engine3D_transform_reset(&tmp);
 	tmp.translation.x = 14.5;
-	tmp.translation.z = 25.5;
+	//tmp.translation.z = 25.5;
+	tmp.translation.z = 22.5;
 	tmp.rotation.y = 180;
 	wfstn3D_monster_init(&monster, &tmp, level);
 }
@@ -290,6 +291,7 @@ void wfstn3D_level_load(const char *const levelname, const char *const texturena
 void wfstn3D_level_input(const wfstn3D_level_t *const level) {
 	if (engine3D_input_getKeyDown(GLFW_KEY_E)) {
 		wfstn3D_level_openDoorsAt(&level->player->camera->pos, level);
+		wfstn3D_monster_damage(&monster, 30);
 	}
 
 	wfstn3D_player_input(level->player);
@@ -435,38 +437,6 @@ static bool lineIntersect(const engine3D_vector2f_t *const lineStart1, const eng
 	return false;
 }
 
-bool wfstn3D_level_checkIntersections(const wfstn3D_level_t *const level, const engine3D_vector2f_t *const lineStart, const engine3D_vector2f_t *const lineEnd, engine3D_vector2f_t *const nearestIntersection) {
-	float minDiffference = INFINITY;
-	bool ret = false;
-	for (size_t i = 0; i < level->collisionPosStartLen; i++) {
-		engine3D_vector2f_t collisionVector, tmp;
-		float diff;
-		if (lineIntersect(lineStart, lineEnd, level->collisionPosStart + i, level->collisionPosEnd + i, &collisionVector) &&
-			minDiffference > (diff = engine3D_vector2f_length(engine3D_vector2f_sub(&collisionVector, lineStart, &tmp))))
-		{
-			minDiffference = diff;
-			memcpy(nearestIntersection, &collisionVector, sizeof(engine3D_vector2f_t));
-			ret = true;
-		}
-	}
-	for (size_t i = 0; i < level->doorsLen; i++) {
-		engine3D_vector2f_t collisionVector, tmp, doorPos2, doorSize;
-		wfstn3D_door_getSize(level->doors + i, &doorSize);
-		doorPos2.x = level->doors[i].transform.translation.x;
-		doorPos2.y = level->doors[i].transform.translation.z;
-
-		float diff;
-		if (lineIntersect(lineStart, lineEnd, &doorPos2, &doorSize, &collisionVector) &&
-			minDiffference > (diff = engine3D_vector2f_length(engine3D_vector2f_sub(&collisionVector, lineStart, &tmp))))
-		{
-			minDiffference = diff;
-			memcpy(nearestIntersection, &collisionVector, sizeof(engine3D_vector2f_t));
-			ret = true;
-		}
-	}
-	return ret;
-}
-
 engine3D_vector2f_t *nearestVector2f(engine3D_vector2f_t *const a, engine3D_vector2f_t *const b, const engine3D_vector2f_t *const position) {
 	engine3D_vector2f_t tmp;
 	if (engine3D_vector2f_length(engine3D_vector2f_sub(a, position, &tmp)) > engine3D_vector2f_length(engine3D_vector2f_sub(b, position, &tmp))) {
@@ -528,4 +498,36 @@ bool wfstn3D_level_lineIntersectRect(const wfstn3D_level_t *const level, const e
 	}
 
 	return res;
+}
+
+bool wfstn3D_level_checkIntersections(const wfstn3D_level_t *const level, const engine3D_vector2f_t *const lineStart, const engine3D_vector2f_t *const lineEnd, engine3D_vector2f_t *const nearestIntersection) {
+	float minDiffference = INFINITY;
+	bool ret = false;
+	for (size_t i = 0; i < level->collisionPosStartLen; i++) {
+		engine3D_vector2f_t collisionVector, tmp;
+		float diff;
+		if (lineIntersect(lineStart, lineEnd, level->collisionPosStart + i, level->collisionPosEnd + i, &collisionVector) &&
+			minDiffference > (diff = engine3D_vector2f_length(engine3D_vector2f_sub(&collisionVector, lineStart, &tmp))))
+		{
+			minDiffference = diff;
+			memcpy(nearestIntersection, &collisionVector, sizeof(engine3D_vector2f_t));
+			ret = true;
+		}
+	}
+	for (size_t i = 0; i < level->doorsLen; i++) {
+		engine3D_vector2f_t collisionVector, tmp, doorPos2, doorSize;
+		wfstn3D_door_getSize(level->doors + i, &doorSize);
+		doorPos2.x = level->doors[i].transform.translation.x;
+		doorPos2.y = level->doors[i].transform.translation.z;
+
+		float diff;
+		if (wfstn3D_level_lineIntersectRect(level, lineStart, lineEnd, &doorPos2, &doorSize, &collisionVector) &&
+			minDiffference > (diff = engine3D_vector2f_length(engine3D_vector2f_sub(&collisionVector, lineStart, &tmp))))
+		{
+			minDiffference = diff;
+			memcpy(nearestIntersection, &collisionVector, sizeof(engine3D_vector2f_t));
+			ret = true;
+		}
+	}
+	return ret;
 }
