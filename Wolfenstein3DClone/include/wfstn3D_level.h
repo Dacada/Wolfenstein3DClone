@@ -15,6 +15,8 @@ struct wfstn3D_door_t;
 // So we can't just include the player's header file
 struct wfstn3D_player_t;
 
+struct wfstn3D_monster_t;
+
 typedef struct wfstn3D_level_t {
 	wfstn3D_bitmap_t *bitmap;
 
@@ -33,7 +35,7 @@ typedef struct wfstn3D_level_t {
 	engine3D_vector2f_t *collisionPosEnd;
 	size_t collisionPosEndLen;
 
-	wfstn3D_monster_t *monsters;
+	struct wfstn3D_monster_t *monsters;
 	size_t monstersLen;
 } wfstn3D_level_t;
 

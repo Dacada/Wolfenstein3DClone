@@ -535,7 +535,48 @@ bool wfstn3D_level_checkIntersections(const wfstn3D_level_t *const level, const 
 	}
 
 	if (hurtMonsters) {
+		float nearestMonsterDiff = INFINITY;
+		engine3D_vector2f_t nearestMonsterIntersect, tmp;
+		wfstn3D_monster_t *nearestMonster = NULL;
+		bool seenAnyMonsters = false;
 
+		for (size_t i = 0; i < level->monstersLen; i++) {
+			engine3D_vector2f_t collisionVector, tmp, monsterPos2, monsterSize;
+			wfstn3D_monster_getSize(level->monsters + i, &monsterSize);
+			monsterPos2.x = level->monsters[i].transform.translation.x;
+			monsterPos2.y = level->monsters[i].transform.translation.z;
+
+			float diff;
+			if (wfstn3D_level_lineIntersectRect(level, lineStart, lineEnd, &monsterPos2, &monsterSize, &collisionVector) &&
+				nearestMonsterDiff >(diff = engine3D_vector2f_length(engine3D_vector2f_sub(&collisionVector, lineStart, &tmp))))
+			{
+				nearestMonsterDiff = diff;
+				memcpy(&nearestMonsterIntersect, &collisionVector, sizeof(engine3D_vector2f_t));
+				nearestMonster = level->monsters + i;
+				seenAnyMonsters = true;
+			}
+		}
+
+		//if (seenAnyMonsters) {
+		//	fprintf(stderr, "FJUCK FUFKMC FUKC UJ FIUDHOILKFN!!!!!!!!!!\n");
+		//	if (ret)
+		//	{
+		//		engine3D_vector2f_t v1, v2;
+		//		engine3D_vector2f_sub(&nearestMonsterIntersect, &lineStart, &v1);
+		//		engine3D_vector2f_sub(&nearestIntersection, &lineStart, &v2);
+		//		float l1 = engine3D_vector2f_length(&v1);
+		//		float l2 = engine3D_vector2f_length(&v2);
+		//		fprintf(stderr, "FJUCK FUFKMC FUKC UJ FIUDHOILKFN!!!!!!!!!!\n");
+		//	}
+		//}
+
+		if (seenAnyMonsters && (!ret ||
+			engine3D_vector2f_length(engine3D_vector2f_sub(&nearestMonsterIntersect, &lineStart, &tmp)) <
+			engine3D_vector2f_length(engine3D_vector2f_sub(&nearestIntersection, &lineStart, &tmp))))
+		{
+			fprintf(stderr, "POW HAHA!\n");
+			wfstn3D_monster_damage(nearestMonster, wfstn3D_player_getDamage());
+		}
 	}
 
 	return ret;

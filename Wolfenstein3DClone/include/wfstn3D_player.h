@@ -24,4 +24,6 @@ void wfstn3D_player_render(wfstn3D_player_t *const player);
 
 void wfstn3D_player_cleanup(wfstn3D_player_t *const player);
 
+int wfstn3D_player_getDamage(void);
+
 #endif /* WFSTN3D_PLAYER_H */

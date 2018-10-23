@@ -38,4 +38,6 @@ void wfstn3D_monster_cleanup(wfstn3D_monster_t *const monster);
 
 void wfstn3D_monster_damage(wfstn3D_monster_t *const monster, int amount);
 
+void wfstn3D_monster_getSize(const wfstn3D_monster_t *const monster, engine3D_vector2f_t *const size);
+
 #endif /* WFSTN3D_MONSTER_H */

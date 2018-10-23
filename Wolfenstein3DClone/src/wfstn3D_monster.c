@@ -29,8 +29,8 @@
 
 #define MOVE_SPEED (1.0f)
 #define MOVE_STOP_DISTANCE (1.5f)
-#define MONSTER_WIDTH (0.1f)
-#define MONSTER_LENGTH (0.1f)
+#define MONSTER_WIDTH (0.3f)
+#define MONSTER_LENGTH (0.3f)
 
 #define SHOOT_DISTANCE (1000.0f)
 #define SHOOT_ANGLE (10.0f)
@@ -260,4 +260,9 @@ void wfstn3D_monster_damage(wfstn3D_monster_t *const monster, int amount) {
 	else if (monster->state = WFSTN3D_MONSTER_STATE_IDLE) {
 		monster->state = WFSTN3D_MONSTER_STATE_CHASING;
 	}
+}
+
+void wfstn3D_monster_getSize(const wfstn3D_monster_t * const monster, engine3D_vector2f_t *const size) {
+	size->x = MONSTER_WIDTH;
+	size->y = MONSTER_LENGTH;
 }

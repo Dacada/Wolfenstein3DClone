@@ -12,6 +12,8 @@
 #define MOUSE_SENSITIVITY (1000.0f)
 #define MOVE_SPEED (10.0f)
 #define SHOOT_DISTANCE (1000.0f)
+#define SHOOT_DAMAGE_MIN (33)
+#define SHOOT_DAMAGE_MAX (37)
 
 void wfstn3D_player_init(const engine3D_vector3f_t *const position, wfstn3D_level_t *const level, wfstn3D_player_t *const player) {
 	player->camera = engine3D_util_safeMalloc(sizeof(engine3D_camera_t));
@@ -142,4 +144,8 @@ void wfstn3D_player_render(wfstn3D_player_t *const player) {
 
 void wfstn3D_player_cleanup(wfstn3D_player_t *const player) {
 	free(player->camera);
+}
+
+int wfstn3D_player_getDamage(void) {
+	return rand() % (SHOOT_DAMAGE_MAX - SHOOT_DAMAGE_MIN) + SHOOT_DAMAGE_MIN;
 }
