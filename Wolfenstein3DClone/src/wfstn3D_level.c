@@ -24,8 +24,6 @@
 #define OPEN_DISTANCE (1.0f)
 #define OPEN_MOVEMENT_AMOUNT (0.9f)
 
-wfstn3D_monster_t monster;
-
 static void getTexCoords(unsigned int p, float *XLower, float *XHigher, float *YLower, float *YHigher) {
 	/*
 	* 255 191 127  63
@@ -285,20 +283,19 @@ void wfstn3D_level_load(const char *const levelname, const char *const texturena
 	//tmp.translation.z = 25.5;
 	tmp.translation.z = 22.5;
 	tmp.rotation.y = 180;
-	wfstn3D_monster_init(&monster, &tmp, level);
+	level->monsters = malloc(sizeof(wfstn3D_monster_t));
+	level->monstersLen = 1;
+	wfstn3D_monster_init(level->monsters, &tmp, level);
 }
 
 void wfstn3D_level_input(const wfstn3D_level_t *const level) {
-	if (engine3D_input_getKeyDown(GLFW_KEY_E)) {
-		wfstn3D_level_openDoorsAt(&level->player->camera->pos, level);
-		wfstn3D_monster_damage(&monster, 30);
-	}
-
 	wfstn3D_player_input(level->player);
 	for (size_t i = 0; i < level->doorsLen; i++) {
 		wfstn3D_door_input(level->doors + i);
 	}
-	wfstn3D_monster_input(&monster);
+	for (size_t i = 0; i < level->monstersLen; i++) {
+		wfstn3D_monster_input(level->monsters + i);
+	}
 }
 
 void wfstn3D_level_update(const wfstn3D_level_t *const level) {
@@ -306,7 +303,9 @@ void wfstn3D_level_update(const wfstn3D_level_t *const level) {
 	for (size_t i = 0; i < level->doorsLen; i++) {
 		wfstn3D_door_update(level->doors + i);
 	}
-	wfstn3D_monster_update(&monster);
+	for (size_t i = 0; i < level->monstersLen; i++) {
+		wfstn3D_monster_update(level->monsters + i);
+	}
 }
 
 void wfstn3D_level_render(const wfstn3D_level_t *const level) {
@@ -322,7 +321,9 @@ void wfstn3D_level_render(const wfstn3D_level_t *const level) {
 	for (size_t i = 0; i < level->doorsLen; i++) {
 		wfstn3D_door_render(level->doors + i);
 	}
-	wfstn3D_monster_render(&monster);
+	for (size_t i = 0; i < level->monstersLen; i++) {
+		wfstn3D_monster_render(level->monsters + i);
+	}
 }
 
 void wfstn3D_level_unload(wfstn3D_level_t *const level) {
@@ -331,7 +332,10 @@ void wfstn3D_level_unload(wfstn3D_level_t *const level) {
 		wfstn3D_door_cleanup(level->doors + i);
 	}
 	free(level->doors);
-	wfstn3D_monster_cleanup(&monster);
+	for (size_t i = 0; i < level->monstersLen; i++) {
+		wfstn3D_monster_cleanup(level->monsters + i);
+	}
+	free(level->monsters);
 
 	wfstn3D_bitmap_unload(level->bitmap);
 	free(level->bitmap);
@@ -500,7 +504,7 @@ bool wfstn3D_level_lineIntersectRect(const wfstn3D_level_t *const level, const e
 	return res;
 }
 
-bool wfstn3D_level_checkIntersections(const wfstn3D_level_t *const level, const engine3D_vector2f_t *const lineStart, const engine3D_vector2f_t *const lineEnd, engine3D_vector2f_t *const nearestIntersection) {
+bool wfstn3D_level_checkIntersections(const wfstn3D_level_t *const level, const engine3D_vector2f_t *const lineStart, const engine3D_vector2f_t *const lineEnd, engine3D_vector2f_t *const nearestIntersection, bool hurtMonsters) {
 	float minDiffference = INFINITY;
 	bool ret = false;
 	for (size_t i = 0; i < level->collisionPosStartLen; i++) {
@@ -529,5 +533,10 @@ bool wfstn3D_level_checkIntersections(const wfstn3D_level_t *const level, const 
 			ret = true;
 		}
 	}
+
+	if (hurtMonsters) {
+
+	}
+
 	return ret;
 }

@@ -11,6 +11,7 @@
 
 #define MOUSE_SENSITIVITY (1000.0f)
 #define MOVE_SPEED (10.0f)
+#define SHOOT_DISTANCE (1000.0f)
 
 void wfstn3D_player_init(const engine3D_vector3f_t *const position, wfstn3D_level_t *const level, wfstn3D_player_t *const player) {
 	player->camera = engine3D_util_safeMalloc(sizeof(engine3D_camera_t));
@@ -30,6 +31,10 @@ void wfstn3D_player_init(const engine3D_vector3f_t *const position, wfstn3D_leve
 void wfstn3D_player_input(wfstn3D_player_t *const player) {
 	float delta = (float)engine3D_time_getDelta();
 
+	if (engine3D_input_getKeyDown(GLFW_KEY_E)) {
+		wfstn3D_level_openDoorsAt(&player->camera->pos, player->level);
+	}
+
 	static bool mouseLock = false;
 	int centerPositionX, centerPositionY;
 	engine3D_window_getSize(&centerPositionX, &centerPositionY);
@@ -43,9 +48,23 @@ void wfstn3D_player_input(wfstn3D_player_t *const player) {
 	}
 
 	if (engine3D_input_getMouseDown(GLFW_MOUSE_BUTTON_1)) {
-		engine3D_input_setCursor(ENGINE3D_CURSOR_DISABLED);
-		engine3D_input_setMousePosition(&centerPosition);
-		mouseLock = true;
+		if (!mouseLock)
+		{
+			engine3D_input_setCursor(ENGINE3D_CURSOR_DISABLED);
+			engine3D_input_setMousePosition(&centerPosition);
+			mouseLock = true;
+		}
+		else {
+			engine3D_vector2f_t lineStart, lineEnd, castDirection, tmp, collisionVector;
+			lineStart.x = player->camera->pos.x;
+			lineStart.y = player->camera->pos.z;
+			castDirection.x = player->camera->forward.x;
+			castDirection.y = player->camera->forward.z;
+			engine3D_vector2f_normalize(&castDirection);
+			engine3D_vector2f_add(&lineStart, engine3D_vector2f_mulf(&castDirection, SHOOT_DISTANCE, &tmp), &lineEnd);
+
+			wfstn3D_level_checkIntersections(player->level, &lineStart, &lineEnd, &collisionVector, true);
+		}
 	}
 
 	player->movementVector.x = 0;

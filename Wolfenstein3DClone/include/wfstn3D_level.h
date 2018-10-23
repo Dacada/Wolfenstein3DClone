@@ -32,6 +32,9 @@ typedef struct wfstn3D_level_t {
 	size_t collisionPosStartLen;
 	engine3D_vector2f_t *collisionPosEnd;
 	size_t collisionPosEndLen;
+
+	wfstn3D_monster_t *monsters;
+	size_t monstersLen;
 } wfstn3D_level_t;
 
 void wfstn3D_level_load(const char *const levelname, const char *const texturename, wfstn3D_level_t *const level);
@@ -48,7 +51,7 @@ void wfstn3D_level_checkCollision(const engine3D_vector3f_t *const oldPos, const
 
 void wfstn3D_level_openDoorsAt(const engine3D_vector3f_t *const position, const wfstn3D_level_t *const level);
 
-bool wfstn3D_level_checkIntersections(const wfstn3D_level_t *const level, const engine3D_vector2f_t *const lineStart, const engine3D_vector2f_t *const lineEnd, engine3D_vector2f_t *const collisionVector);
+bool wfstn3D_level_checkIntersections(const wfstn3D_level_t *const level, const engine3D_vector2f_t *const lineStart, const engine3D_vector2f_t *const lineEnd, engine3D_vector2f_t *const collisionVector, bool hurtMonsters);
 
 bool wfstn3D_level_lineIntersectRect(const wfstn3D_level_t *const level, const engine3D_vector2f_t *const lineStart, const engine3D_vector2f_t *const lineEnd, const engine3D_vector2f_t *const pos, const engine3D_vector2f_t *const size, engine3D_vector2f_t *const result);
 

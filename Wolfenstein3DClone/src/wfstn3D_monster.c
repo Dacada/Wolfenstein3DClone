@@ -101,7 +101,7 @@ void idleUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *con
 
 		engine3D_vector2f_add(&lineStart, engine3D_vector2f_mulf(&castDirection, SHOOT_DISTANCE, &tmp), &lineEnd);
 
-		bool i1 = wfstn3D_level_checkIntersections(monster->level, &lineStart, &lineEnd, &collisionVector);
+		bool i1 = wfstn3D_level_checkIntersections(monster->level, &lineStart, &lineEnd, &collisionVector, false);
 		engine3D_vector2f_t size = { WFSTN3D_PLAYER_SIZE ,WFSTN3D_PLAYER_SIZE }, pos = { engine3D_transform_camera->pos.x,engine3D_transform_camera->pos.z };
 		bool i2 = wfstn3D_level_lineIntersectRect(monster->level, &lineStart, &lineEnd, &pos, &size, &playerIntersectVector);
 
@@ -160,7 +160,7 @@ void attackingUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t
 
 		engine3D_vector2f_add(&lineStart, engine3D_vector2f_mulf(&rotatedCastDirection, SHOOT_DISTANCE, &tmp), &lineEnd);
 
-		bool i1 = wfstn3D_level_checkIntersections(monster->level, &lineStart, &lineEnd, &collisionVector);
+		bool i1 = wfstn3D_level_checkIntersections(monster->level, &lineStart, &lineEnd, &collisionVector, false);
 		engine3D_vector2f_t size = { WFSTN3D_PLAYER_SIZE ,WFSTN3D_PLAYER_SIZE }, pos = { engine3D_transform_camera->pos.x,engine3D_transform_camera->pos.z };
 		bool i2 = wfstn3D_level_lineIntersectRect(monster->level, &lineStart, &lineEnd, &pos, &size, &playerIntersectVector);
 
