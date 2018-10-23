@@ -12,8 +12,9 @@
 #define MOUSE_SENSITIVITY (1000.0f)
 #define MOVE_SPEED (10.0f)
 #define SHOOT_DISTANCE (1000.0f)
-#define SHOOT_DAMAGE_MIN (33)
-#define SHOOT_DAMAGE_MAX (37)
+#define SHOOT_DAMAGE_MIN (20)
+#define SHOOT_DAMAGE_MAX (60)
+#define MAX_HEALTH (100)
 
 void wfstn3D_player_init(const engine3D_vector3f_t *const position, wfstn3D_level_t *const level, wfstn3D_player_t *const player) {
 	player->camera = engine3D_util_safeMalloc(sizeof(engine3D_camera_t));
@@ -28,6 +29,7 @@ void wfstn3D_player_init(const engine3D_vector3f_t *const position, wfstn3D_leve
 	player->camera->up.x = 0;
 	player->camera->up.y = 1;
 	player->camera->up.z = 0;
+	player->health = MAX_HEALTH;
 }
 
 void wfstn3D_player_input(wfstn3D_player_t *const player) {
@@ -148,4 +150,18 @@ void wfstn3D_player_cleanup(wfstn3D_player_t *const player) {
 
 int wfstn3D_player_getDamage(void) {
 	return rand() % (SHOOT_DAMAGE_MAX - SHOOT_DAMAGE_MIN) + SHOOT_DAMAGE_MIN;
+}
+
+extern bool isGameRunning;
+void wfstn3D_player_damage(wfstn3D_player_t *const player, int amount) {
+	player->health -= amount;
+	if (player->health > MAX_HEALTH)
+		player->health = MAX_HEALTH;
+
+	fprintf(stderr, "Player Ouch, %d/100\n", player->health);
+
+	if (player->health <= 0) {
+		isGameRunning = false;
+		fprintf(stderr, "ur ded - Thanks Obama\n", player->health);
+	}
 }

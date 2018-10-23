@@ -17,8 +17,11 @@
 wfstn3D_level_t level;
 wfstn3D_player_t player; // TODO: Finish moving player spawning to the level
 
+bool isGameRunning;
+
 static void init(void) {
 	srand(time(NULL));
+	isGameRunning = true;
 	engine3D_resourceLoader_setResPath("../Wolfenstein3DClone/res/");
 
 	wfstn3D_level_load("level1.png", "WolfCollection.png", &level);
@@ -46,7 +49,8 @@ static void update(void) {
 }
 
 static void render(void) {
-	wfstn3D_level_render(&level);
+	if (isGameRunning)
+		wfstn3D_level_render(&level);
 }
 
 static void cleanup(void) {

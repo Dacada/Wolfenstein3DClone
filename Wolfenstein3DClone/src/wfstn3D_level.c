@@ -557,22 +557,9 @@ bool wfstn3D_level_checkIntersections(const wfstn3D_level_t *const level, const 
 			}
 		}
 
-		//if (seenAnyMonsters) {
-		//	fprintf(stderr, "FJUCK FUFKMC FUKC UJ FIUDHOILKFN!!!!!!!!!!\n");
-		//	if (ret)
-		//	{
-		//		engine3D_vector2f_t v1, v2;
-		//		engine3D_vector2f_sub(&nearestMonsterIntersect, &lineStart, &v1);
-		//		engine3D_vector2f_sub(&nearestIntersection, &lineStart, &v2);
-		//		float l1 = engine3D_vector2f_length(&v1);
-		//		float l2 = engine3D_vector2f_length(&v2);
-		//		fprintf(stderr, "FJUCK FUFKMC FUKC UJ FIUDHOILKFN!!!!!!!!!!\n");
-		//	}
-		//}
-
 		if (seenAnyMonsters && (!ret ||
-			engine3D_vector2f_length(engine3D_vector2f_sub(&nearestMonsterIntersect, &lineStart, &tmp)) <
-			engine3D_vector2f_length(engine3D_vector2f_sub(&nearestIntersection, &lineStart, &tmp))))
+			engine3D_vector2f_length(engine3D_vector2f_sub(&nearestMonsterIntersect, lineStart, &tmp)) <
+			engine3D_vector2f_length(engine3D_vector2f_sub(&nearestIntersection, lineStart, &tmp))))
 		{
 			fprintf(stderr, "POW HAHA!\n");
 			wfstn3D_monster_damage(nearestMonster, wfstn3D_player_getDamage());

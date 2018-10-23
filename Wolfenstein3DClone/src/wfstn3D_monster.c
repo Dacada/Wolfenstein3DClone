@@ -36,6 +36,8 @@
 #define SHOOT_ANGLE (10.0f)
 
 #define ATTACK_CHANCE (0.5f)
+#define SHOOT_DAMAGE_MIN (5)
+#define SHOOT_DAMAGE_MAX (30)
 
 #define MAX_HEALTH (100)
 
@@ -166,6 +168,7 @@ void attackingUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t
 
 		if (i2 && (!i1 || engine3D_vector2f_length(engine3D_vector2f_sub(&playerIntersectVector, &lineStart, &tmp)) < engine3D_vector2f_length(engine3D_vector2f_sub(&collisionVector, &lineStart, &tmp)))) {
 			fprintf(stderr, "OOF!\n");
+			wfstn3D_player_damage(monster->level->player, rand() % (SHOOT_DAMAGE_MAX - SHOOT_DAMAGE_MIN) + SHOOT_DAMAGE_MIN);
 		}
 
 		if (i1)
