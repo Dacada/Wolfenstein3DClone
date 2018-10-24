@@ -317,13 +317,13 @@ void wfstn3D_level_render(const wfstn3D_level_t *const level) {
 	engine3D_basicShader_updateUniforms(level->shader, &worldMatrix, &projectedMatrix, level->material);
 	engine3D_mesh_draw(level->mesh);
 
-	wfstn3D_player_render(level->player);
 	for (size_t i = 0; i < level->doorsLen; i++) {
 		wfstn3D_door_render(level->doors + i);
 	}
 	for (size_t i = 0; i < level->monstersLen; i++) {
 		wfstn3D_monster_render(level->monsters + i);
 	}
+	wfstn3D_player_render(level->player);
 }
 
 void wfstn3D_level_unload(wfstn3D_level_t *const level) {
@@ -561,7 +561,6 @@ bool wfstn3D_level_checkIntersections(const wfstn3D_level_t *const level, const 
 			engine3D_vector2f_length(engine3D_vector2f_sub(&nearestMonsterIntersect, lineStart, &tmp)) <
 			engine3D_vector2f_length(engine3D_vector2f_sub(&nearestIntersection, lineStart, &tmp))))
 		{
-			fprintf(stderr, "POW HAHA!\n");
 			wfstn3D_monster_damage(nearestMonster, wfstn3D_player_getDamage());
 		}
 	}

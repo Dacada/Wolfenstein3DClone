@@ -44,6 +44,9 @@
 static engine3D_mesh_t mesh;
 static bool meshIsLoaded = false;
 
+static engine3D_texture_t *animations = NULL;
+static size_t animationsLen;
+
 void wfstn3D_monster_init(wfstn3D_monster_t *const monster, const engine3D_transform_t *const transform, wfstn3D_level_t *const level) {
 	memcpy(&monster->transform, transform, sizeof(engine3D_transform_t));
 
@@ -56,15 +59,41 @@ void wfstn3D_monster_init(wfstn3D_monster_t *const monster, const engine3D_trans
 
 	monster->health = MAX_HEALTH;
 
+	monster->deathTime = 0;
+
+	if (animations == NULL) {
+		animationsLen = 13;
+		animations = engine3D_util_safeMalloc(sizeof(engine3D_texture_t)*animationsLen);
+
+		engine3D_resourceLoader_loadTexture("SSWVA1.png", animations + 0);
+		engine3D_resourceLoader_loadTexture("SSWVB1.png", animations + 1);
+		engine3D_resourceLoader_loadTexture("SSWVC1.png", animations + 2);
+		engine3D_resourceLoader_loadTexture("SSWVD1.png", animations + 3);
+
+		engine3D_resourceLoader_loadTexture("SSWVE0.png", animations + 4);
+		engine3D_resourceLoader_loadTexture("SSWVF0.png", animations + 5);
+		engine3D_resourceLoader_loadTexture("SSWVG0.png", animations + 6);
+
+		engine3D_resourceLoader_loadTexture("SSWVH0.png", animations + 7);
+
+		engine3D_resourceLoader_loadTexture("SSWVI0.png", animations + 8);
+		engine3D_resourceLoader_loadTexture("SSWVJ0.png", animations + 9);
+		engine3D_resourceLoader_loadTexture("SSWVK0.png", animations + 10);
+		engine3D_resourceLoader_loadTexture("SSWVL0.png", animations + 11);
+
+		engine3D_resourceLoader_loadTexture("SSWVM0.png", animations + 12);
+	}
+
 	monster->material = engine3D_util_safeMalloc(sizeof(engine3D_material_t));
 	monster->material->color = engine3D_util_safeMalloc(sizeof(engine3D_vector3f_t));
-	monster->material->texture = engine3D_util_safeMalloc(sizeof(engine3D_texture_t));
+	//monster->material->texture = engine3D_util_safeMalloc(sizeof(engine3D_texture_t));
 	monster->material->color->x = 1;
 	monster->material->color->y = 1;
 	monster->material->color->z = 1;
-	engine3D_resourceLoader_loadTexture("SSWVA1.png", monster->material->texture);
+	//engine3D_resourceLoader_loadTexture("SSWVA1.png", monster->material->texture);
 	monster->material->specularIntensity = 0;
 	monster->material->specularPower = 0;
+	monster->material->texture = animations + 0;
 
 	if (!meshIsLoaded) {
 		engine3D_vertex_t vertices[4] = { { { -SIZEX,START,START },{ TEX_MAX_X,TEX_MAX_Y },{ 0,0,0 } },
@@ -92,32 +121,52 @@ void idleUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *con
 
 	if (timeDecimals < 0.5) {
 		monster->canLook = true;
+		monster->material->texture = animations + 0;
 	}
-	else if (monster->canLook) {
-		engine3D_vector2f_t lineStart, castDirection, lineEnd, collisionVector, playerIntersectVector, tmp;
+	else {
+		monster->material->texture = animations + 1;
 
-		lineStart.x = monster->transform.translation.x;
-		lineStart.y = monster->transform.translation.z;
-		castDirection.x = orientation->x;
-		castDirection.y = orientation->z;
+		if (monster->canLook) {
+			engine3D_vector2f_t lineStart, castDirection, lineEnd, collisionVector, playerIntersectVector, tmp;
 
-		engine3D_vector2f_add(&lineStart, engine3D_vector2f_mulf(&castDirection, SHOOT_DISTANCE, &tmp), &lineEnd);
+			lineStart.x = monster->transform.translation.x;
+			lineStart.y = monster->transform.translation.z;
+			castDirection.x = orientation->x;
+			castDirection.y = orientation->z;
 
-		bool i1 = wfstn3D_level_checkIntersections(monster->level, &lineStart, &lineEnd, &collisionVector, false);
-		engine3D_vector2f_t size = { WFSTN3D_PLAYER_SIZE ,WFSTN3D_PLAYER_SIZE }, pos = { engine3D_transform_camera->pos.x,engine3D_transform_camera->pos.z };
-		bool i2 = wfstn3D_level_lineIntersectRect(monster->level, &lineStart, &lineEnd, &pos, &size, &playerIntersectVector);
+			engine3D_vector2f_add(&lineStart, engine3D_vector2f_mulf(&castDirection, SHOOT_DISTANCE, &tmp), &lineEnd);
 
-		if (i2 && (!i1 || engine3D_vector2f_length(engine3D_vector2f_sub(&playerIntersectVector, &lineStart, &tmp)) < engine3D_vector2f_length(engine3D_vector2f_sub(&collisionVector, &lineStart, &tmp)))) {
-			fprintf(stderr, "FOUND!\n");
-			monster->state = WFSTN3D_MONSTER_STATE_CHASING;
+			bool i1 = wfstn3D_level_checkIntersections(monster->level, &lineStart, &lineEnd, &collisionVector, false);
+			engine3D_vector2f_t size = { WFSTN3D_PLAYER_SIZE ,WFSTN3D_PLAYER_SIZE }, pos = { engine3D_transform_camera->pos.x,engine3D_transform_camera->pos.z };
+			bool i2 = wfstn3D_level_lineIntersectRect(monster->level, &lineStart, &lineEnd, &pos, &size, &playerIntersectVector);
+
+			if (i2 && (!i1 || engine3D_vector2f_length(engine3D_vector2f_sub(&playerIntersectVector, &lineStart, &tmp)) < engine3D_vector2f_length(engine3D_vector2f_sub(&collisionVector, &lineStart, &tmp)))) {
+				monster->state = WFSTN3D_MONSTER_STATE_CHASING;
+			}
+
+			monster->canLook = false;
 		}
-
-		monster->canLook = false;
 	}
 }
 
 void chasingUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *const orientation, float distance) {
 	engine3D_vector3f_t tmp, newPos, movementVector, collisionVector;
+
+	double time = engine3D_timer_getTime() / engine3D_timer_second;
+	double timeDecimals = time - (double)((int)time);
+
+	if (timeDecimals < 0.25) {
+		monster->material->texture = animations + 0;
+	}
+	else if (timeDecimals < 0.5) {
+		monster->material->texture = animations + 1;
+	}
+	else if (timeDecimals < 0.75) {
+		monster->material->texture = animations + 2;
+	}
+	else {
+		monster->material->texture = animations + 3;
+	}
 
 	if (((float)rand() / (float)RAND_MAX) < ATTACK_CHANCE * (float)engine3D_time_getDelta())
 		monster->state = WFSTN3D_MONSTER_STATE_ATTACKING;
@@ -148,50 +197,94 @@ void attackingUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t
 	double time = engine3D_timer_getTime() / engine3D_timer_second;
 	double timeDecimals = time - (double)((int)time);
 
-	if (timeDecimals < 0.5) {
-		monster->canAttack = true;
+	if (timeDecimals < 0.25) {
+		monster->material->texture = animations + 4;
 	}
-	else if (monster->canAttack) {
-		engine3D_vector2f_t lineStart, castDirection, rotatedCastDirection, lineEnd, collisionVector, playerIntersectVector, tmp;
+	else if (timeDecimals < 0.5) {
+		monster->material->texture = animations + 5;
+	}
+	else if (timeDecimals < 0.75) {
+		monster->material->texture = animations + 6;
 
-		lineStart.x = monster->transform.translation.x;
-		lineStart.y = monster->transform.translation.z;
-		castDirection.x = orientation->x;
-		castDirection.y = orientation->z;
-		engine3D_vector2f_rotateDeg(&castDirection, (((float)rand()) / ((float)RAND_MAX) - 0.5f)*SHOOT_ANGLE, &rotatedCastDirection);
+		if (monster->canAttack) {
+			engine3D_vector2f_t lineStart, castDirection, rotatedCastDirection, lineEnd, collisionVector, playerIntersectVector, tmp;
 
-		engine3D_vector2f_add(&lineStart, engine3D_vector2f_mulf(&rotatedCastDirection, SHOOT_DISTANCE, &tmp), &lineEnd);
+			lineStart.x = monster->transform.translation.x;
+			lineStart.y = monster->transform.translation.z;
+			castDirection.x = orientation->x;
+			castDirection.y = orientation->z;
+			engine3D_vector2f_rotateDeg(&castDirection, (((float)rand()) / ((float)RAND_MAX) - 0.5f)*SHOOT_ANGLE, &rotatedCastDirection);
 
-		bool i1 = wfstn3D_level_checkIntersections(monster->level, &lineStart, &lineEnd, &collisionVector, false);
-		engine3D_vector2f_t size = { WFSTN3D_PLAYER_SIZE ,WFSTN3D_PLAYER_SIZE }, pos = { engine3D_transform_camera->pos.x,engine3D_transform_camera->pos.z };
-		bool i2 = wfstn3D_level_lineIntersectRect(monster->level, &lineStart, &lineEnd, &pos, &size, &playerIntersectVector);
+			engine3D_vector2f_add(&lineStart, engine3D_vector2f_mulf(&rotatedCastDirection, SHOOT_DISTANCE, &tmp), &lineEnd);
 
-		if (i2 && (!i1 || engine3D_vector2f_length(engine3D_vector2f_sub(&playerIntersectVector, &lineStart, &tmp)) < engine3D_vector2f_length(engine3D_vector2f_sub(&collisionVector, &lineStart, &tmp)))) {
-			fprintf(stderr, "OOF!\n");
-			wfstn3D_player_damage(monster->level->player, rand() % (SHOOT_DAMAGE_MAX - SHOOT_DAMAGE_MIN) + SHOOT_DAMAGE_MIN);
+			bool i1 = wfstn3D_level_checkIntersections(monster->level, &lineStart, &lineEnd, &collisionVector, false);
+			engine3D_vector2f_t size = { WFSTN3D_PLAYER_SIZE ,WFSTN3D_PLAYER_SIZE }, pos = { engine3D_transform_camera->pos.x,engine3D_transform_camera->pos.z };
+			bool i2 = wfstn3D_level_lineIntersectRect(monster->level, &lineStart, &lineEnd, &pos, &size, &playerIntersectVector);
+
+			if (i2 && (!i1 || engine3D_vector2f_length(engine3D_vector2f_sub(&playerIntersectVector, &lineStart, &tmp)) < engine3D_vector2f_length(engine3D_vector2f_sub(&collisionVector, &lineStart, &tmp)))) {
+				wfstn3D_player_damage(monster->level->player, rand() % (SHOOT_DAMAGE_MAX - SHOOT_DAMAGE_MIN) + SHOOT_DAMAGE_MIN);
+			}
+
+			monster->state = WFSTN3D_MONSTER_STATE_CHASING;
+			monster->canAttack = false;
 		}
-
-		if (i1)
-			fprintf(stderr, "Something got hit\n");
-		else
-			fprintf(stderr, "NANI?!\n");
-
-		monster->state = WFSTN3D_MONSTER_STATE_CHASING;
-		monster->canAttack = false;
+	}
+	else {
+		monster->canAttack = true;
+		monster->material->texture = animations + 5;
 	}
 }
 
 void dyingUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *const orientation, float distance) {
 	(void)orientation;
 	(void)distance;
-	monster->state = WFSTN3D_MONSTER_STATE_DEAD;
+
+	double time = engine3D_timer_getTime() / engine3D_timer_second;
+	double timeDecimals = time - (double)((int)time);
+
+	if (monster->deathTime == 0)
+	{
+		monster->deathTime = time;
+	}
+	double deathTime = monster->deathTime;
+
+	const double time1 = 0.1f;
+	const double time2 = 0.3f;
+	const double time3 = 0.45f;
+	const double time4 = 0.6f;
+
+	if (time < deathTime + time1)
+	{
+		monster->material->texture = animations + 8;
+		monster->transform.scale.y = 0.96429f;
+	}
+	else if (time < deathTime + time2)
+	{
+		monster->material->texture = animations + 9;
+		monster->transform.scale.x = 1.7f;
+		monster->transform.scale.y = 0.9f;
+	}
+	else if (time < deathTime + time3)
+	{
+		monster->material->texture = animations + 10;
+	}
+	else if (time < deathTime + time4)
+	{
+		monster->material->texture = animations + 11;
+		monster->transform.scale.y = 0.5f;
+	}
+	else
+	{
+		monster->state = WFSTN3D_MONSTER_STATE_DEAD;
+	}
 }
 
 void deadUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *const orientation, float distance) {
-	(void)monster;
 	(void)orientation;
 	(void)distance;
-	fprintf(stderr, "DED, NO BIG SURPRISE\n");
+	monster->material->texture = animations + 12;
+	monster->transform.scale.x = 1.75862f;
+	monster->transform.scale.y = 0.28571f;
 }
 
 void alignWithGround(wfstn3D_monster_t *const monster) {
@@ -250,13 +343,16 @@ void wfstn3D_monster_render(wfstn3D_monster_t *const monster) {
 
 void wfstn3D_monster_cleanup(wfstn3D_monster_t *const monster) {
 	free(monster->material->color);
-	free(monster->material->texture);
 	free(monster->material);
+}
+
+void wfstn3D_monster_cleanupAll(void) {
+	free(animations);
+	animations = NULL;
 }
 
 void wfstn3D_monster_damage(wfstn3D_monster_t *const monster, int amount) {
 	monster->health -= amount;
-	fprintf(stderr, "Ouch, %d/100\n", monster->health);
 	if (monster->health <= 0) {
 		monster->state = WFSTN3D_MONSTER_STATE_DYING;
 	}

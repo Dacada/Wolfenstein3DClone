@@ -16,6 +16,24 @@
 #define SHOOT_DAMAGE_MAX (60)
 #define MAX_HEALTH (100)
 
+#define SCALE (0.0625f)
+#define START (0.0f)
+#define SIZEY SCALE
+#define SIZEX (SIZEY / (2.0f * 1.83797))
+
+#define TEX_MIN_X (0.0f)
+#define TEX_MAX_X (-1.0f)
+#define TEX_MIN_Y (0.0f)
+#define TEX_MAX_Y (-1.0f)
+
+#define GUN_OFFSET (-0.0875f)
+
+engine3D_mesh_t gunMesh;
+bool gunMeshIsLoaded = false;
+engine3D_material_t gunMaterial;
+bool gunMaterialIsLoaded = false;
+engine3D_transform_t gunTransform;
+
 void wfstn3D_player_init(const engine3D_vector3f_t *const position, wfstn3D_level_t *const level, wfstn3D_player_t *const player) {
 	player->camera = engine3D_util_safeMalloc(sizeof(engine3D_camera_t));
 	player->level = level;
@@ -30,6 +48,38 @@ void wfstn3D_player_init(const engine3D_vector3f_t *const position, wfstn3D_leve
 	player->camera->up.y = 1;
 	player->camera->up.z = 0;
 	player->health = MAX_HEALTH;
+
+	if (!gunMeshIsLoaded) {
+		engine3D_vertex_t vertices[4] = { { { -SIZEX,START,START },{ TEX_MAX_X,TEX_MAX_Y },{ 0,0,0 } },
+										  { { -SIZEX,SIZEY,START },{ TEX_MAX_X,TEX_MIN_Y },{ 0,0,0 } },
+										  { {  SIZEX,SIZEY,START },{ TEX_MIN_X,TEX_MIN_Y },{ 0,0,0 } },
+										  { {  SIZEX,START,START },{ TEX_MIN_X,TEX_MAX_Y },{ 0,0,0 } } };
+
+		unsigned int indices[6] = { 0, 1, 2,
+			0, 2, 3 };
+
+		engine3D_mesh_init(&gunMesh);
+		engine3D_mesh_addVertices(&gunMesh, vertices, 4, indices, 6, true);
+
+		gunMeshIsLoaded = true;
+	}
+
+	if (!gunMaterialIsLoaded) {
+		gunMaterial.color = engine3D_util_safeMalloc(sizeof(engine3D_vector3f_t));
+		gunMaterial.texture = engine3D_util_safeMalloc(sizeof(engine3D_texture_t));
+
+		gunMaterial.color->x = 1;
+		gunMaterial.color->y = 1;
+		gunMaterial.color->z = 1;
+		engine3D_resourceLoader_loadTexture("PISGB0.png", gunMaterial.texture);
+		gunMaterial.specularIntensity = 0;
+		gunMaterial.specularPower = 0;
+	}
+
+	engine3D_transform_reset(&gunTransform);
+	gunTransform.translation.x = position->x;
+	gunTransform.translation.y = position->y;
+	gunTransform.translation.z = position->z;
 }
 
 void wfstn3D_player_input(wfstn3D_player_t *const player) {
@@ -137,11 +187,38 @@ void wfstn3D_player_update(wfstn3D_player_t *const player) {
 	engine3D_vector3f_mul(&player->movementVector, &collisionVector, &tmp);
 	memcpy(&player->movementVector, &tmp, sizeof(engine3D_vector3f_t));
 
-	engine3D_camera_move(player->camera, &player->movementVector, movAmt);
+	if (engine3D_vector3f_length(&player->movementVector) > 0)
+		engine3D_camera_move(player->camera, &player->movementVector, movAmt);
+
+	// Gun movement
+	engine3D_vector3f_t tmp, tmp2, normalizedCameraForward;
+	memcpy(&normalizedCameraForward, &engine3D_transform_camera->forward, sizeof(engine3D_vector3f_t));
+	memcpy(&gunTransform.translation, 
+		   engine3D_vector3f_mulf(engine3D_vector3f_add(&engine3D_transform_camera->pos, &normalizedCameraForward, &tmp), 0.105f, &tmp2),
+		   sizeof(engine3D_vector3f_t));
+	gunTransform.translation.y += GUN_OFFSET;
+
+	float distance;
+	engine3D_vector3f_t directionToCamera, orientation;
+	engine3D_vector3f_sub(&engine3D_transform_camera->pos, &gunTransform.translation, &directionToCamera);
+	distance = engine3D_vector3f_length(&directionToCamera);
+	engine3D_vector3f_divf(&directionToCamera, distance, &orientation);
+
+	float angle = atanf(orientation.z / orientation.x) / 3.14159265359f * 180.0f + 90.0f;
+	if (orientation.x < 0)
+		angle += 180.0f;
+	gunTransform.rotation.y = angle;
 }
 
 void wfstn3D_player_render(wfstn3D_player_t *const player) {
-	(void)player;
+	engine3D_basicShader_t *shader = player->level->shader;
+	engine3D_matrix4f_t transformationMatrix, projectedTransformationMatrix;
+
+	engine3D_transform_getTransformation(&gunTransform, &transformationMatrix);
+	engine3D_transform_getProjectedTransformation(&gunTransform, &projectedTransformationMatrix);
+	engine3D_basicShader_updateUniforms(shader, &transformationMatrix, &projectedTransformationMatrix, &gunMaterial);
+
+	engine3D_mesh_draw(&gunMesh);
 }
 
 void wfstn3D_player_cleanup(wfstn3D_player_t *const player) {
@@ -158,7 +235,7 @@ void wfstn3D_player_damage(wfstn3D_player_t *const player, int amount) {
 	if (player->health > MAX_HEALTH)
 		player->health = MAX_HEALTH;
 
-	fprintf(stderr, "Player Ouch, %d/100\n", player->health);
+	fprintf(stderr, "HP %d/100\n", player->health);
 
 	if (player->health <= 0) {
 		isGameRunning = false;

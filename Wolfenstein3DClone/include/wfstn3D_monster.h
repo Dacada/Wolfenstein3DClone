@@ -24,6 +24,7 @@ typedef struct wfstn3D_monster_t {
 	bool canLook;
 	bool canAttack;
 	int health;
+	double deathTime;
 } wfstn3D_monster_t;
 
 void wfstn3D_monster_init(wfstn3D_monster_t *const monster, const engine3D_transform_t *const transform, wfstn3D_level_t *const level);
@@ -35,6 +36,8 @@ void wfstn3D_monster_update(wfstn3D_monster_t *const monster);
 void wfstn3D_monster_render(wfstn3D_monster_t *const monster);
 			 
 void wfstn3D_monster_cleanup(wfstn3D_monster_t *const monster);
+
+void wfstn3D_monster_cleanupAll(void);
 
 void wfstn3D_monster_damage(wfstn3D_monster_t *const monster, int amount);
 

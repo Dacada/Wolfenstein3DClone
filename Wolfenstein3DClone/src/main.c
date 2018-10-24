@@ -55,6 +55,7 @@ static void render(void) {
 
 static void cleanup(void) {
 	wfstn3D_level_unload(&level);
+	wfstn3D_monster_cleanupAll();
 }
 
 int main(void) {
