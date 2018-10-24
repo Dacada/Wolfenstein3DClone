@@ -195,9 +195,9 @@ void wfstn3D_player_update(wfstn3D_player_t *const player) {
 	// Gun movement
 	engine3D_vector3f_t tmp2, normalizedCameraForward;
 	memcpy(&normalizedCameraForward, &engine3D_transform_camera->forward, sizeof(engine3D_vector3f_t));
-	memcpy(&gunTransform.translation,
-		   engine3D_vector3f_mulf(engine3D_vector3f_add(&engine3D_transform_camera->pos, &normalizedCameraForward, &tmp), 0.105f, &tmp2),
-		   sizeof(engine3D_vector3f_t));
+	engine3D_vector3f_normalize(&normalizedCameraForward);
+	engine3D_vector3f_mulf(&normalizedCameraForward, 0.105f, &tmp);
+	engine3D_vector3f_add(&engine3D_transform_camera->pos, &tmp, &gunTransform.translation);
 	gunTransform.translation.y += GUN_OFFSET;
 
 	float distance;
