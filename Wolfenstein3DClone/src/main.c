@@ -1,5 +1,6 @@
 #include <wfstn3D_level.h>
 #include <wfstn3D_player.h>
+#include <wfstn3D_monster.h>
 
 #include <Engine3D/engine3D_main.h>
 #include <Engine3D/engine3D_window.h>

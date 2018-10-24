@@ -116,6 +116,7 @@ void wfstn3D_monster_input(wfstn3D_monster_t *const monster) {
 }
 
 void idleUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *const orientation, float distance) {
+	(void)distance;
 	double time = engine3D_timer_getTime() / engine3D_timer_second;
 	double timeDecimals = time - (double)((int)time);
 
@@ -240,7 +241,6 @@ void dyingUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *co
 	(void)distance;
 
 	double time = engine3D_timer_getTime() / engine3D_timer_second;
-	double timeDecimals = time - (double)((int)time);
 
 	if (monster->deathTime == 0)
 	{
@@ -356,12 +356,13 @@ void wfstn3D_monster_damage(wfstn3D_monster_t *const monster, int amount) {
 	if (monster->health <= 0) {
 		monster->state = WFSTN3D_MONSTER_STATE_DYING;
 	}
-	else if (monster->state = WFSTN3D_MONSTER_STATE_IDLE) {
+	else if (monster->state == WFSTN3D_MONSTER_STATE_IDLE) {
 		monster->state = WFSTN3D_MONSTER_STATE_CHASING;
 	}
 }
 
 void wfstn3D_monster_getSize(const wfstn3D_monster_t * const monster, engine3D_vector2f_t *const size) {
+	(void)monster;
 	size->x = MONSTER_WIDTH;
 	size->y = MONSTER_LENGTH;
 }

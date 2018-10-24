@@ -1,6 +1,7 @@
 #include <wfstn3D_player.h>
 
 #include <Engine3D/engine3D_util.h>
+#include <Engine3D/engine3D_resourceLoader.h>
 #include <Engine3D/engine3D_input.h>
 #include <Engine3D/engine3D_time.h>
 #include <Engine3D/engine3D_window.h>
@@ -8,6 +9,7 @@
 #include <stdbool.h>
 
 #include <string.h>
+#include <math.h>
 
 #define MOUSE_SENSITIVITY (1000.0f)
 #define MOVE_SPEED (10.0f)
@@ -191,9 +193,9 @@ void wfstn3D_player_update(wfstn3D_player_t *const player) {
 		engine3D_camera_move(player->camera, &player->movementVector, movAmt);
 
 	// Gun movement
-	engine3D_vector3f_t tmp, tmp2, normalizedCameraForward;
+	engine3D_vector3f_t tmp2, normalizedCameraForward;
 	memcpy(&normalizedCameraForward, &engine3D_transform_camera->forward, sizeof(engine3D_vector3f_t));
-	memcpy(&gunTransform.translation, 
+	memcpy(&gunTransform.translation,
 		   engine3D_vector3f_mulf(engine3D_vector3f_add(&engine3D_transform_camera->pos, &normalizedCameraForward, &tmp), 0.105f, &tmp2),
 		   sizeof(engine3D_vector3f_t));
 	gunTransform.translation.y += GUN_OFFSET;
@@ -239,6 +241,6 @@ void wfstn3D_player_damage(wfstn3D_player_t *const player, int amount) {
 
 	if (player->health <= 0) {
 		isGameRunning = false;
-		fprintf(stderr, "ur ded - Thanks Obama\n", player->health);
+		fprintf(stderr, "ur ded - Thanks Obama\n");
 	}
 }

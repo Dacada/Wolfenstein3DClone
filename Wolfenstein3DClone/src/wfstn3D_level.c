@@ -559,7 +559,7 @@ bool wfstn3D_level_checkIntersections(const wfstn3D_level_t *const level, const 
 
 		if (seenAnyMonsters && (!ret ||
 			engine3D_vector2f_length(engine3D_vector2f_sub(&nearestMonsterIntersect, lineStart, &tmp)) <
-			engine3D_vector2f_length(engine3D_vector2f_sub(&nearestIntersection, lineStart, &tmp))))
+			engine3D_vector2f_length(engine3D_vector2f_sub(nearestIntersection, lineStart, &tmp))))
 		{
 			wfstn3D_monster_damage(nearestMonster, wfstn3D_player_getDamage());
 		}
