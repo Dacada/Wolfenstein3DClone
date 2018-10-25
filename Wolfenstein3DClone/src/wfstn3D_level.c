@@ -136,11 +136,10 @@ static void addMedkit(wfstn3D_level_t *level, size_t i, size_t j) {
 	size_t newMedkitIndex = level->medkitsLen++;
 	level->medkits = engine3D_util_safeRealloc(level->medkits, sizeof(wfstn3D_medkit_t) * level->medkitsLen);
 
-	engine3D_transform_t tmp;
-	engine3D_transform_reset(&tmp);
-	tmp.translation.x = (i + 0.5) * SPOT_WIDTH;
-	tmp.translation.y = 0.4375f;
-	tmp.translation.z = (j + 0.5) * SPOT_LENGTH;
+	engine3D_vector3f_t tmp;
+	tmp.x = (i + 0.5) * SPOT_WIDTH;
+	tmp.y = 0.4375f;
+	tmp.z = (j + 0.5) * SPOT_LENGTH;
 	wfstn3D_medkit_init(level->medkits + newMedkitIndex, &tmp, level);
 }
 

@@ -36,9 +36,9 @@ typedef struct wfstn3D_level_t {
 	struct wfstn3D_monster_t *monsters;
 	size_t monstersLen;
 
-	struct wfstn3D_monster_t *medkits;
+	struct wfstn3D_medkit_t *medkits;
 	size_t medkitsLen;
-	
+
 } wfstn3D_level_t;
 
 void wfstn3D_level_load(const char *const levelname, const char *const texturename, wfstn3D_level_t *const level);

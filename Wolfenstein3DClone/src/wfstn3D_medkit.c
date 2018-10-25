@@ -1,6 +1,8 @@
 #include <wfstn3D_medkit.h>
 
 #include <Engine3D/engine3D_mesh.h>
+#include <Engine3D/engine3D_util.h>
+#include <Engine3D/engine3D_resourceLoader.h>
 
 #define SCALE (0.7f)
 
@@ -20,6 +22,8 @@ bool materialIsLoaded = false;
 
 void wfstn3D_medkit_init(wfstn3D_medkit_t *const medkit, const engine3D_vector3f_t *const position, wfstn3D_level_t *const level) {
 	medkit->level = level;
+	engine3D_transform_reset(&medkit->transform);
+	medkit->transform.translation = *position;
 
 	if (!meshIsLoaded) {
 		engine3D_vertex_t vertices[4] = { { { -SIZEX,START,START },{ TEX_MAX_X,TEX_MAX_Y },{ 0,0,0 } },
@@ -28,7 +32,7 @@ void wfstn3D_medkit_init(wfstn3D_medkit_t *const medkit, const engine3D_vector3f
 		                                  { {  SIZEX,START,START },{ TEX_MIN_X,TEX_MAX_Y },{ 0,0,0 } } };
 
 		unsigned int indices[6] = { 0, 1, 2,
-			0, 2, 3 };
+			                          0, 2, 3 };
 
 		engine3D_mesh_init(&mesh);
 		engine3D_mesh_addVertices(&mesh, vertices, 4, indices, 6, true);
@@ -50,9 +54,11 @@ void wfstn3D_medkit_init(wfstn3D_medkit_t *const medkit, const engine3D_vector3f
 }
 
 void wfstn3D_medkit_input(wfstn3D_medkit_t *const medkit) {
+	(void)medkit;
 }
 
 void wfstn3D_medkit_update(wfstn3D_medkit_t *const medkit) {
+	(void)medkit;
 }
 
 void wfstn3D_medkit_render(wfstn3D_medkit_t *const medkit) {
@@ -67,4 +73,5 @@ void wfstn3D_medkit_render(wfstn3D_medkit_t *const medkit) {
 }
 
 void wfstn3D_medkit_cleanup(wfstn3D_medkit_t *const medkit) {
+	(void)medkit;
 }

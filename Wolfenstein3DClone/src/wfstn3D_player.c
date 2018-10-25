@@ -193,7 +193,7 @@ void wfstn3D_player_update(wfstn3D_player_t *const player) {
 		engine3D_camera_move(player->camera, &player->movementVector, movAmt);
 
 	// Gun movement
-	engine3D_vector3f_t tmp2, normalizedCameraForward;
+	engine3D_vector3f_t normalizedCameraForward;
 	memcpy(&normalizedCameraForward, &engine3D_transform_camera->forward, sizeof(engine3D_vector3f_t));
 	engine3D_vector3f_normalize(&normalizedCameraForward);
 	engine3D_vector3f_mulf(&normalizedCameraForward, 0.105f, &tmp);
