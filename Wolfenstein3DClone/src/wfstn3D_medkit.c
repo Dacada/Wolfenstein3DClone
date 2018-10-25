@@ -58,7 +58,16 @@ void wfstn3D_medkit_input(wfstn3D_medkit_t *const medkit) {
 }
 
 void wfstn3D_medkit_update(wfstn3D_medkit_t *const medkit) {
-	(void)medkit;
+	float distance;
+	engine3D_vector3f_t directionToCamera, orientation;
+	engine3D_vector3f_sub(&engine3D_transform_camera->pos, &medkit->transform.translation, &directionToCamera);
+	distance = engine3D_vector3f_length(&directionToCamera);
+	engine3D_vector3f_divf(&directionToCamera, distance, &orientation);
+
+	float angle = atanf(orientation.z / orientation.x) / 3.14159265359f * 180.0f + 90.0f;
+	if (orientation.x < 0)
+		angle += 180.0f;
+	medkit->transform.rotation.y = angle;
 }
 
 void wfstn3D_medkit_render(wfstn3D_medkit_t *const medkit) {
