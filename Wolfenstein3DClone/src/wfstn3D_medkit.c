@@ -4,6 +4,8 @@
 #include <Engine3D/engine3D_util.h>
 #include <Engine3D/engine3D_resourceLoader.h>
 
+#include <math.h>
+
 #define SCALE (0.7f)
 
 #define START (0.0f)
