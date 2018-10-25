@@ -12,7 +12,7 @@
 #include <math.h>
 
 #define MOUSE_SENSITIVITY (1000.0f)
-#define MOVE_SPEED (10.0f)
+#define MOVE_SPEED (5.0f)
 #define SHOOT_DISTANCE (1000.0f)
 #define SHOOT_DAMAGE_MIN (20)
 #define SHOOT_DAMAGE_MAX (60)

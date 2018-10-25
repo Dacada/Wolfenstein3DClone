@@ -3,6 +3,7 @@
 #include <wfstn3D_bitmap.h>
 #include <wfstn3D_door.h>
 #include <wfstn3D_monster.h>
+#include <wfstn3D_medkit.h>
 
 #include <Engine3D/engine3D_mesh.h>
 #include <Engine3D/engine3D_texture.h>
@@ -113,9 +114,45 @@ static void addDoor(wfstn3D_level_t *level, size_t i, size_t j) {
 	wfstn3D_door_init(level->doors + doorIndex, &transform, level->material, level, &openPosition);
 }
 
+static void addPlayer(wfstn3D_level_t *level, size_t i, size_t j) {
+	level->player = engine3D_util_safeMalloc(sizeof(wfstn3D_player_t));
+	engine3D_vector3f_t playerPos = { (i + 0.5) * SPOT_WIDTH, 0.4375f, (j + 0.5) * SPOT_LENGTH };
+	wfstn3D_player_init(&playerPos, level, level->player);
+}
+
+static void addMonster(wfstn3D_level_t *level, size_t i, size_t j) {
+	size_t newMonsterIndex = level->monstersLen++;
+	level->monsters = engine3D_util_safeRealloc(level->monsters, sizeof(wfstn3D_monster_t) * level->monstersLen);
+
+	engine3D_transform_t tmp;
+	engine3D_transform_reset(&tmp);
+	tmp.translation.x = (i + 0.5) * SPOT_WIDTH;
+	tmp.translation.y = 0.4375f;
+	tmp.translation.z = (j + 0.5) * SPOT_LENGTH;
+	wfstn3D_monster_init(level->monsters + newMonsterIndex, &tmp, level);
+}
+
+static void addMedkit(wfstn3D_level_t *level, size_t i, size_t j) {
+	size_t newMedkitIndex = level->medkitsLen++;
+	level->medkits = engine3D_util_safeRealloc(level->medkits, sizeof(wfstn3D_medkit_t) * level->medkitsLen);
+
+	engine3D_transform_t tmp;
+	engine3D_transform_reset(&tmp);
+	tmp.translation.x = (i + 0.5) * SPOT_WIDTH;
+	tmp.translation.y = 0.4375f;
+	tmp.translation.z = (j + 0.5) * SPOT_LENGTH;
+	wfstn3D_medkit_init(level->medkits + newMedkitIndex, &tmp, level);
+}
+
 static void addSpecial(unsigned int blueValue, wfstn3D_level_t *level, size_t i, size_t j) {
-	if (blueValue == 16)
+	if (blueValue == 1)
+		addPlayer(level, i, j);
+	else if (blueValue == 16)
 		addDoor(level, i, j);
+	else if (blueValue == 128)
+		addMonster(level, i, j);
+	else if (blueValue == 192)
+		addMedkit(level, i, j);
 }
 
 static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len,
@@ -242,8 +279,16 @@ static void generateLevel(engine3D_vertex_t **vertices, size_t *vertices_len,
 }
 
 void wfstn3D_level_load(const char *const levelname, const char *const texturename, wfstn3D_level_t *const level) {
-	level->doorsLen = 0;
+	level->player = NULL;
+
 	level->doors = NULL;
+	level->doorsLen = 0;
+
+	level->monsters = NULL;
+	level->monstersLen = 0;
+
+	level->medkits = NULL;
+	level->medkitsLen = 0;
 
 	level->bitmap = engine3D_util_safeMalloc(sizeof(wfstn3D_bitmap_t));
 	wfstn3D_bitmap_load(levelname, level->bitmap);
@@ -276,16 +321,6 @@ void wfstn3D_level_load(const char *const levelname, const char *const texturena
 
 	level->transform = engine3D_util_safeMalloc(sizeof(engine3D_transform_t));
 	engine3D_transform_reset(level->transform);
-
-	engine3D_transform_t tmp;
-	engine3D_transform_reset(&tmp);
-	tmp.translation.x = 14.5;
-	//tmp.translation.z = 25.5;
-	tmp.translation.z = 22.5;
-	tmp.rotation.y = 180;
-	level->monsters = malloc(sizeof(wfstn3D_monster_t));
-	level->monstersLen = 1;
-	wfstn3D_monster_init(level->monsters, &tmp, level);
 }
 
 void wfstn3D_level_input(const wfstn3D_level_t *const level) {
@@ -296,6 +331,9 @@ void wfstn3D_level_input(const wfstn3D_level_t *const level) {
 	for (size_t i = 0; i < level->monstersLen; i++) {
 		wfstn3D_monster_input(level->monsters + i);
 	}
+	for (size_t i = 0; i < level->medkitsLen; i++) {
+		wfstn3D_medkit_input(level->medkits + i);
+	}
 }
 
 void wfstn3D_level_update(const wfstn3D_level_t *const level) {
@@ -305,6 +343,9 @@ void wfstn3D_level_update(const wfstn3D_level_t *const level) {
 	}
 	for (size_t i = 0; i < level->monstersLen; i++) {
 		wfstn3D_monster_update(level->monsters + i);
+	}
+	for (size_t i = 0; i < level->medkitsLen; i++) {
+		wfstn3D_medkit_update(level->medkits + i);
 	}
 }
 
@@ -323,6 +364,9 @@ void wfstn3D_level_render(const wfstn3D_level_t *const level) {
 	for (size_t i = 0; i < level->monstersLen; i++) {
 		wfstn3D_monster_render(level->monsters + i);
 	}
+	for (size_t i = 0; i < level->medkitsLen; i++) {
+		wfstn3D_medkit_render(level->medkits + i);
+	}
 	wfstn3D_player_render(level->player);
 }
 
@@ -336,6 +380,10 @@ void wfstn3D_level_unload(wfstn3D_level_t *const level) {
 		wfstn3D_monster_cleanup(level->monsters + i);
 	}
 	free(level->monsters);
+	for (size_t i = 0; i < level->medkitsLen; i++) {
+		wfstn3D_medkit_cleanup(level->medkits + i);
+	}
+	free(level->medkits);
 
 	wfstn3D_bitmap_unload(level->bitmap);
 	free(level->bitmap);
@@ -345,6 +393,7 @@ void wfstn3D_level_unload(wfstn3D_level_t *const level) {
 	free(level->material);
 	free(level->mesh);
 	free(level->transform);
+	free(level->player);
 }
 
 static void rectCollide(const engine3D_vector2f_t *const oldPos, const engine3D_vector2f_t *const newPos, const engine3D_vector2f_t *const size1, const engine3D_vector2f_t *const pos2, const engine3D_vector2f_t *const size2, engine3D_vector2f_t *const result) {

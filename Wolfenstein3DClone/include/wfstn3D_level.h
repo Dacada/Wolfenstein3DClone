@@ -9,13 +9,11 @@
 
 // door already includes level in order to be able to have a reference to its level
 // but level also needs a reference to door in order to hold an array of doors it owns
+// same issue with all others
 struct wfstn3D_door_t;
-
-// Player needs a reference to level and level a reference to player
-// So we can't just include the player's header file
 struct wfstn3D_player_t;
-
 struct wfstn3D_monster_t;
+struct wfstn3D_medkit_t;
 
 typedef struct wfstn3D_level_t {
 	wfstn3D_bitmap_t *bitmap;
@@ -37,6 +35,10 @@ typedef struct wfstn3D_level_t {
 
 	struct wfstn3D_monster_t *monsters;
 	size_t monstersLen;
+
+	struct wfstn3D_monster_t *medkits;
+	size_t medkitsLen;
+	
 } wfstn3D_level_t;
 
 void wfstn3D_level_load(const char *const levelname, const char *const texturename, wfstn3D_level_t *const level);

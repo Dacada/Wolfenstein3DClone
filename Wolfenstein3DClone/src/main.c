@@ -16,7 +16,6 @@
 #include <time.h>
 
 wfstn3D_level_t level;
-wfstn3D_player_t player; // TODO: Finish moving player spawning to the level
 
 bool isGameRunning;
 
@@ -26,12 +25,8 @@ static void init(void) {
 	engine3D_resourceLoader_setResPath("../Wolfenstein3DClone/res/");
 
 	wfstn3D_level_load("level1.png", "WolfCollection.png", &level);
-	level.player = &player;
 
-	engine3D_vector3f_t playerPos = { 14.5, 0.4375f, 27 };
-	wfstn3D_player_init(&playerPos, &level, &player);
-
-	engine3D_transform_camera = player.camera;
+	engine3D_transform_camera = level.player->camera;
 	engine3D_transform_fov = 70;
 	int width, height;
 	engine3D_window_getSize(&width, &height);
