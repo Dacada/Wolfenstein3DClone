@@ -6,6 +6,7 @@
 typedef struct wfstn3D_medkit_t {
 	wfstn3D_level_t *level;
 	engine3D_transform_t transform;
+	bool enabled;
 } wfstn3D_medkit_t;
 
 void wfstn3D_medkit_init(wfstn3D_medkit_t *const medkit, const engine3D_vector3f_t *const position, wfstn3D_level_t *const level);

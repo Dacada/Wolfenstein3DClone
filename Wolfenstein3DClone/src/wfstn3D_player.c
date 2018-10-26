@@ -16,7 +16,6 @@
 #define SHOOT_DISTANCE (1000.0f)
 #define SHOOT_DAMAGE_MIN (20)
 #define SHOOT_DAMAGE_MAX (60)
-#define MAX_HEALTH (100)
 
 #define SCALE (0.0625f)
 #define START (0.0f)
@@ -49,7 +48,11 @@ void wfstn3D_player_init(const engine3D_vector3f_t *const position, wfstn3D_leve
 	player->camera->up.x = 0;
 	player->camera->up.y = 1;
 	player->camera->up.z = 0;
-	player->health = MAX_HEALTH;
+	player->health = WFSTN3D_PLAYER_MAX_HEALTH;
+
+	player->movementVector.x = 0;
+	player->movementVector.y = 0;
+	player->movementVector.z = 0;
 
 	if (!gunMeshIsLoaded) {
 		engine3D_vertex_t vertices[4] = { { { -SIZEX,START,START },{ TEX_MAX_X,TEX_MAX_Y },{ 0,0,0 } },
@@ -88,7 +91,7 @@ void wfstn3D_player_input(wfstn3D_player_t *const player) {
 	float delta = (float)engine3D_time_getDelta();
 
 	if (engine3D_input_getKeyDown(GLFW_KEY_E)) {
-		wfstn3D_level_openDoorsAt(&player->camera->pos, player->level);
+		wfstn3D_level_openDoorsAt(&player->camera->pos, player->level, true);
 	}
 
 	static bool mouseLock = false;
@@ -166,11 +169,11 @@ void wfstn3D_player_input(wfstn3D_player_t *const player) {
 		engine3D_input_setMousePosition(&centerPosition);
 	}
 
-	if (engine3D_input_getKey(GLFW_KEY_ENTER)) {
-		engine3D_vector3f_fprintf(stderr, &player->camera->pos);
-		engine3D_vector3f_fprintf(stderr, &player->camera->forward);
-		engine3D_vector3f_fprintf(stderr, &player->camera->up);
-	}
+	//if (engine3D_input_getKey(GLFW_KEY_ENTER)) {
+	//	engine3D_vector3f_fprintf(stderr, &player->camera->pos);
+	//	engine3D_vector3f_fprintf(stderr, &player->camera->forward);
+	//	engine3D_vector3f_fprintf(stderr, &player->camera->up);
+	//}
 }
 
 void wfstn3D_player_update(wfstn3D_player_t *const player) {
@@ -231,11 +234,13 @@ int wfstn3D_player_getDamage(void) {
 	return rand() % (SHOOT_DAMAGE_MAX - SHOOT_DAMAGE_MIN) + SHOOT_DAMAGE_MIN;
 }
 
-extern bool isGameRunning;
+extern bool isGameRunning; // It might be more proper to pass this in as a variable on level creation
 void wfstn3D_player_damage(wfstn3D_player_t *const player, int amount) {
 	player->health -= amount;
-	if (player->health > MAX_HEALTH)
-		player->health = MAX_HEALTH;
+	if (player->health > WFSTN3D_PLAYER_MAX_HEALTH)
+		player->health = WFSTN3D_PLAYER_MAX_HEALTH;
+	else if (player->health < 0)
+		player->health = 0;
 
 	fprintf(stderr, "HP %d/100\n", player->health);
 

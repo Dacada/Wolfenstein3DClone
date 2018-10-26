@@ -184,7 +184,7 @@ void chasingUpdate(wfstn3D_monster_t *const monster, const engine3D_vector3f_t *
 		}
 
 		if (engine3D_vector3f_length(engine3D_vector3f_sub(&movementVector, orientation, &tmp)) != 0) {
-			wfstn3D_level_openDoorsAt(&monster->transform.translation, monster->level);
+			wfstn3D_level_openDoorsAt(&monster->transform.translation, monster->level, false);
 		}
 	}
 	else {

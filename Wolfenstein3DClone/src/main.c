@@ -15,16 +15,18 @@
 
 #include <time.h>
 
+#define NUMBER_OF_LEVELS 2
+
 wfstn3D_level_t level;
 
 bool isGameRunning;
+bool hasLevelEnded;
+int currentLevel;
 
-static void init(void) {
-	srand(time(NULL));
-	isGameRunning = true;
-	engine3D_resourceLoader_setResPath("../Wolfenstein3DClone/res/");
-
-	wfstn3D_level_load("level1.png", "WolfCollection.png", &level);
+static void loadLevelN(int n) {
+	char currentLevel[20];
+	snprintf(currentLevel, 20, "level%d.png", n);
+	wfstn3D_level_load(currentLevel, "WolfCollection.png", &level);
 
 	engine3D_transform_camera = level.player->camera;
 	engine3D_transform_fov = 70;
@@ -36,12 +38,34 @@ static void init(void) {
 	engine3D_transform_zFar = 1000;
 }
 
+static void init(void) {
+	srand(time(NULL));
+	isGameRunning = true;
+	hasLevelEnded = false;
+	currentLevel = 1;
+	engine3D_resourceLoader_setResPath("../Wolfenstein3DClone/res/");
+
+	loadLevelN(currentLevel);
+}
+
 static void input(void) {
 	wfstn3D_level_input(&level);
 }
 
 static void update(void) {
 	wfstn3D_level_update(&level);
+
+	if (hasLevelEnded) {
+		if (currentLevel < NUMBER_OF_LEVELS) {
+			hasLevelEnded = false;
+			wfstn3D_level_unload(&level);
+			loadLevelN(++currentLevel);
+		}
+		else {
+			fprintf("stderr", "YOU WON! Now get out of here.\n");
+			isGameRunning = false;
+		}
+	}
 }
 
 static void render(void) {

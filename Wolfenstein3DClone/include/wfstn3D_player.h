@@ -7,6 +7,7 @@
 #include <Engine3D/engine3D_camera.h>
 
 #define WFSTN3D_PLAYER_SIZE (0.3f)
+#define WFSTN3D_PLAYER_MAX_HEALTH (100)
 
 typedef struct wfstn3D_player_t {
 	engine3D_camera_t *camera;

@@ -138,9 +138,17 @@ static void addMedkit(wfstn3D_level_t *level, size_t i, size_t j) {
 
 	engine3D_vector3f_t tmp;
 	tmp.x = (i + 0.5) * SPOT_WIDTH;
-	tmp.y = 0.4375f;
+	tmp.y = 0;
 	tmp.z = (j + 0.5) * SPOT_LENGTH;
 	wfstn3D_medkit_init(level->medkits + newMedkitIndex, &tmp, level);
+}
+
+static void addExitPoint(wfstn3D_level_t *level, size_t i, size_t j) {
+	size_t newExitPointIndex = level->exitPointsLen++;
+	level->exitPoints = engine3D_util_safeRealloc(level->exitPoints, sizeof(wfstn3D_medkit_t) * level->exitPointsLen);
+	level->exitPoints[newExitPointIndex].x = (i + 0.5) * SPOT_WIDTH;
+	level->exitPoints[newExitPointIndex].y = 0;
+	level->exitPoints[newExitPointIndex].z = (j + 0.5) * SPOT_LENGTH;
 }
 
 static void addSpecial(unsigned int blueValue, wfstn3D_level_t *level, size_t i, size_t j) {
@@ -148,6 +156,8 @@ static void addSpecial(unsigned int blueValue, wfstn3D_level_t *level, size_t i,
 		addPlayer(level, i, j);
 	else if (blueValue == 16)
 		addDoor(level, i, j);
+	else if (blueValue == 97)
+		addExitPoint(level, i, j);
 	else if (blueValue == 128)
 		addMonster(level, i, j);
 	else if (blueValue == 192)
@@ -288,6 +298,9 @@ void wfstn3D_level_load(const char *const levelname, const char *const texturena
 
 	level->medkits = NULL;
 	level->medkitsLen = 0;
+
+	level->exitPoints = NULL;
+	level->exitPointsLen = 0;
 
 	level->bitmap = engine3D_util_safeMalloc(sizeof(wfstn3D_bitmap_t));
 	wfstn3D_bitmap_load(levelname, level->bitmap);
@@ -452,12 +465,23 @@ void wfstn3D_level_checkCollision(const engine3D_vector3f_t *const oldPos, const
 	result->z = collisionVector.y;
 }
 
-void wfstn3D_level_openDoorsAt(const engine3D_vector3f_t *const position, const wfstn3D_level_t *const level) {
+extern bool hasLevelEnded; // It might be more proper to pass this as a pointer on level creation
+void wfstn3D_level_openDoorsAt(const engine3D_vector3f_t *const position, const wfstn3D_level_t *const level, bool tryExitLevel) {
 	for (size_t i = 0; i < level->doorsLen; i++) {
 		wfstn3D_door_t *door = level->doors + i;
 		engine3D_vector3f_t tmp;
 		if (engine3D_vector3f_length(engine3D_vector3f_sub(&door->transform.translation, position, &tmp)) < OPEN_DISTANCE) {
 			wfstn3D_door_open(door);
+		}
+	}
+
+	if (tryExitLevel) {
+		for (size_t i = 0; i < level->doorsLen; i++) {
+			engine3D_vector3f_t *exitPoint = level->exitPoints + i;
+			engine3D_vector3f_t tmp;
+			if (engine3D_vector3f_length(engine3D_vector3f_sub(exitPoint, position, &tmp)) < OPEN_DISTANCE) {
+				hasLevelEnded = true;
+			}
 		}
 	}
 }

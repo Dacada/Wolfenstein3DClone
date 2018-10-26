@@ -1,4 +1,5 @@
 #include <wfstn3D_medkit.h>
+#include <wfstn3D_player.h>
 
 #include <Engine3D/engine3D_mesh.h>
 #include <Engine3D/engine3D_util.h>
@@ -6,16 +7,19 @@
 
 #include <math.h>
 
-#define SCALE (0.7f)
+#define SCALE (0.4f)
 
 #define START (0.0f)
 #define SIZEY SCALE
-#define SIZEX (SIZEY / (2.0f * 1.93103f))
+#define SIZEX (SIZEY / (4.0f * 0.678714f))
 
 #define TEX_MIN_X (0.0f)
 #define TEX_MAX_X (-1.0f)
 #define TEX_MIN_Y (0.0f)
 #define TEX_MAX_Y (-1.0f)
+
+#define PICKUP_DISTANCE (0.5f)
+#define HEAL_AMOUNT (25)
 
 engine3D_mesh_t mesh;
 engine3D_material_t material;
@@ -24,6 +28,7 @@ bool materialIsLoaded = false;
 
 void wfstn3D_medkit_init(wfstn3D_medkit_t *const medkit, const engine3D_vector3f_t *const position, wfstn3D_level_t *const level) {
 	medkit->level = level;
+	medkit->enabled = true;
 	engine3D_transform_reset(&medkit->transform);
 	medkit->transform.translation = *position;
 
@@ -56,10 +61,14 @@ void wfstn3D_medkit_init(wfstn3D_medkit_t *const medkit, const engine3D_vector3f
 }
 
 void wfstn3D_medkit_input(wfstn3D_medkit_t *const medkit) {
-	(void)medkit;
+	if (!medkit->enabled)
+		return;
 }
 
 void wfstn3D_medkit_update(wfstn3D_medkit_t *const medkit) {
+	if (!medkit->enabled)
+		return;
+
 	float distance;
 	engine3D_vector3f_t directionToCamera, orientation;
 	engine3D_vector3f_sub(&engine3D_transform_camera->pos, &medkit->transform.translation, &directionToCamera);
@@ -70,9 +79,17 @@ void wfstn3D_medkit_update(wfstn3D_medkit_t *const medkit) {
 	if (orientation.x < 0)
 		angle += 180.0f;
 	medkit->transform.rotation.y = angle;
+
+	if (distance < PICKUP_DISTANCE && medkit->level->player->health < WFSTN3D_PLAYER_MAX_HEALTH) {
+		wfstn3D_player_damage(medkit->level->player, -HEAL_AMOUNT);
+		medkit->enabled = false;
+	}
 }
 
 void wfstn3D_medkit_render(wfstn3D_medkit_t *const medkit) {
+	if (!medkit->enabled)
+		return;
+
 	engine3D_basicShader_t *shader = medkit->level->shader;
 	engine3D_matrix4f_t transformationMatrix, projectedTransformationMatrix;
 
