@@ -15,7 +15,7 @@
 
 #include <time.h>
 
-#define NUMBER_OF_LEVELS 2
+#define NUMBER_OF_LEVELS 3
 
 wfstn3D_level_t level;
 
