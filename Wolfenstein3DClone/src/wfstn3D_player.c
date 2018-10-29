@@ -90,7 +90,7 @@ void wfstn3D_player_init(const engine3D_vector3f_t *const position, wfstn3D_leve
 void wfstn3D_player_input(wfstn3D_player_t *const player) {
 	float delta = (float)engine3D_time_getDelta();
 
-	if (engine3D_input_getKeyDown(GLFW_KEY_E)) {
+	if (engine3D_input_getKeyDown(ENGINE3D_KEY_E)) {
 		wfstn3D_level_openDoorsAt(&player->camera->pos, player->level, true);
 	}
 
@@ -101,12 +101,12 @@ void wfstn3D_player_input(wfstn3D_player_t *const player) {
 	centerPosition.x = (float)centerPositionX;
 	centerPosition.y = (float)centerPositionY;
 
-	if (engine3D_input_getKey(GLFW_KEY_ESCAPE)) {
+	if (engine3D_input_getKey(ENGINE3D_KEY_ESCAPE)) {
 		engine3D_input_setCursor(ENGINE3D_CURSOR_ENABLED);
 		mouseLock = false;
 	}
 
-	if (engine3D_input_getMouseDown(GLFW_MOUSE_BUTTON_1)) {
+	if (engine3D_input_getMouseDown(ENGINE3D_MOUSE_BUTTON_1)) {
 		if (!mouseLock)
 		{
 			engine3D_input_setCursor(ENGINE3D_CURSOR_DISABLED);
@@ -130,21 +130,21 @@ void wfstn3D_player_input(wfstn3D_player_t *const player) {
 	player->movementVector.y = 0;
 	player->movementVector.z = 0;
 
-	if (engine3D_input_getKey(GLFW_KEY_W)) {
+	if (engine3D_input_getKey(ENGINE3D_KEY_W)) {
 		//engine3D_camera_move(player->camera, &player->camera->forward, movAmt);
 		engine3D_vector3f_add(&player->movementVector, &player->camera->forward, &player->movementVector);
 	}
-	if (engine3D_input_getKey(GLFW_KEY_S)) {
+	if (engine3D_input_getKey(ENGINE3D_KEY_S)) {
 		//engine3D_camera_move(player->camera, &player->camera->forward, -movAmt);
 		engine3D_vector3f_sub(&player->movementVector, &player->camera->forward, &player->movementVector);
 	}
-	if (engine3D_input_getKey(GLFW_KEY_A)) {
+	if (engine3D_input_getKey(ENGINE3D_KEY_A)) {
 		engine3D_vector3f_t vec;
 		engine3D_camera_left(player->camera, &vec);
 		engine3D_vector3f_add(&player->movementVector, &vec, &player->movementVector);
 		//engine3D_camera_move(player->camera, &vec, movAmt);
 	}
-	if (engine3D_input_getKey(GLFW_KEY_D)) {
+	if (engine3D_input_getKey(ENGINE3D_KEY_D)) {
 		engine3D_vector3f_t vec;
 		engine3D_camera_right(player->camera, &vec);
 		engine3D_vector3f_add(&player->movementVector, &vec, &player->movementVector);
@@ -169,7 +169,7 @@ void wfstn3D_player_input(wfstn3D_player_t *const player) {
 		engine3D_input_setMousePosition(&centerPosition);
 	}
 
-	//if (engine3D_input_getKey(GLFW_KEY_ENTER)) {
+	//if (engine3D_input_getKey(ENGINE3D_KEY_ENTER)) {
 	//	engine3D_vector3f_fprintf(stderr, &player->camera->pos);
 	//	engine3D_vector3f_fprintf(stderr, &player->camera->forward);
 	//	engine3D_vector3f_fprintf(stderr, &player->camera->up);
