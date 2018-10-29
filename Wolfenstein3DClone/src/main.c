@@ -24,8 +24,8 @@ bool hasLevelEnded;
 int currentLevel;
 
 static void loadLevelN(int n) {
-	char currentLevel[20];
-	snprintf(currentLevel, 20, "level%d.png", n);
+	char currentLevel[50];
+	snprintf(currentLevel, 50, "level%d.png", n);
 	wfstn3D_level_load(currentLevel, "WolfCollection.png", &level);
 
 	engine3D_transform_camera = level.player->camera;
@@ -62,7 +62,7 @@ static void update(void) {
 			loadLevelN(++currentLevel);
 		}
 		else {
-			fprintf("stderr", "YOU WON! Now get out of here.\n");
+			fprintf(stderr, "YOU WON! Now get out of here.\n");
 			isGameRunning = false;
 		}
 	}
