@@ -65,23 +65,23 @@ void wfstn3D_monster_init(wfstn3D_monster_t *const monster, const engine3D_trans
 		animationsLen = 13;
 		animations = engine3D_util_safeMalloc(sizeof(engine3D_texture_t)*animationsLen);
 
-		engine3D_resourceLoader_loadTexture("SSWVA1.png", animations + 0);
-		engine3D_resourceLoader_loadTexture("SSWVB1.png", animations + 1);
-		engine3D_resourceLoader_loadTexture("SSWVC1.png", animations + 2);
-		engine3D_resourceLoader_loadTexture("SSWVD1.png", animations + 3);
+		animations[0] = engine3D_texture_loadFromFile("SSWVA1.png");
+		animations[1] = engine3D_texture_loadFromFile("SSWVB1.png");
+		animations[2] = engine3D_texture_loadFromFile("SSWVC1.png");
+		animations[3] = engine3D_texture_loadFromFile("SSWVD1.png");
 
-		engine3D_resourceLoader_loadTexture("SSWVE0.png", animations + 4);
-		engine3D_resourceLoader_loadTexture("SSWVF0.png", animations + 5);
-		engine3D_resourceLoader_loadTexture("SSWVG0.png", animations + 6);
+		animations[4] = engine3D_texture_loadFromFile("SSWVE0.png");
+		animations[5] = engine3D_texture_loadFromFile("SSWVF0.png");
+		animations[6] = engine3D_texture_loadFromFile("SSWVG0.png");
 
-		engine3D_resourceLoader_loadTexture("SSWVH0.png", animations + 7);
+		animations[7] = engine3D_texture_loadFromFile("SSWVH0.png");
 
-		engine3D_resourceLoader_loadTexture("SSWVI0.png", animations + 8);
-		engine3D_resourceLoader_loadTexture("SSWVJ0.png", animations + 9);
-		engine3D_resourceLoader_loadTexture("SSWVK0.png", animations + 10);
-		engine3D_resourceLoader_loadTexture("SSWVL0.png", animations + 11);
+		animations[8] = engine3D_texture_loadFromFile("SSWVI0.png");
+		animations[9] = engine3D_texture_loadFromFile("SSWVJ0.png");
+		animations[10] = engine3D_texture_loadFromFile("SSWVK0.png");
+		animations[11] = engine3D_texture_loadFromFile("SSWVL0.png");
 
-		engine3D_resourceLoader_loadTexture("SSWVM0.png", animations + 12);
+		animations[12] = engine3D_texture_loadFromFile("SSWVM0.png");
 	}
 
 	monster->material = engine3D_util_safeMalloc(sizeof(engine3D_material_t));
@@ -90,7 +90,6 @@ void wfstn3D_monster_init(wfstn3D_monster_t *const monster, const engine3D_trans
 	monster->material->color->x = 1;
 	monster->material->color->y = 1;
 	monster->material->color->z = 1;
-	//engine3D_resourceLoader_loadTexture("SSWVA1.png", monster->material->texture);
 	monster->material->specularIntensity = 0;
 	monster->material->specularPower = 0;
 	monster->material->texture = animations + 0;

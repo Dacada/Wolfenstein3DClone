@@ -310,7 +310,10 @@ void wfstn3D_level_load(const char *const levelname, const char *const texturena
 	engine3D_texture_t *texture = engine3D_util_safeMalloc(sizeof(engine3D_texture_t));
 	engine3D_vector3f_t *color = engine3D_util_safeMalloc(sizeof(engine3D_vector3f_t));
 	level->material = engine3D_util_safeMalloc(sizeof(engine3D_material_t));
-	engine3D_resourceLoader_loadTexture(texturename, texture);
+
+	// TODO: Fix this madness
+	engine3D_texture_t t = engine3D_texture_loadFromFile(texturename);
+	texture->id = t.id;
 
 	// TODO: Create function to bind texture to material and setup default values
 	color->x = color->y = color->z = 1;

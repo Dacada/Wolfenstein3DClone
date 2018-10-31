@@ -54,7 +54,11 @@ void wfstn3D_medkit_init(wfstn3D_medkit_t *const medkit, const engine3D_vector3f
 		material.color->x = 1;
 		material.color->y = 1;
 		material.color->z = 1;
-		engine3D_resourceLoader_loadTexture("MEDIA0.png", material.texture);
+
+		// TODO: Fix this madness
+		engine3D_texture_t t = engine3D_texture_loadFromFile("MEDIA0.png");
+		material.texture->id = t.id;
+
 		material.specularIntensity = 0;
 		material.specularPower = 0;
 	}

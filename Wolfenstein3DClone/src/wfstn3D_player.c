@@ -76,7 +76,11 @@ void wfstn3D_player_init(const engine3D_vector3f_t *const position, wfstn3D_leve
 		gunMaterial.color->x = 1;
 		gunMaterial.color->y = 1;
 		gunMaterial.color->z = 1;
-		engine3D_resourceLoader_loadTexture("PISGB0.png", gunMaterial.texture);
+
+		// TODO: Fix this madness
+		engine3D_texture_t t = engine3D_texture_loadFromFile("PISGB0.png");
+		gunMaterial.texture->id = t.id;
+
 		gunMaterial.specularIntensity = 0;
 		gunMaterial.specularPower = 0;
 	}
